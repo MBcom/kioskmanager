@@ -1,0 +1,4 @@
+Django==4.2.20
+django-health-check==3.18.3
+django-unfold==0.46.0
+psycopg[binary]>=3.1

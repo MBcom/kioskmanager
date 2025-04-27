@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kioskmanager.fullname" . }}-config
+  labels:
+    {{- include "kioskmanager.labels" . | nindent 4 }}
+data:
+  ADMIN_USERNAME: {{ .Values.adminUser | quote }}
+  {{- if .Values.persistence.enabled }}
+  # Ensure Django knows where the media root volume is mounted inside the container
+  MEDIA_ROOT: {{ .Values.persistence.mountPath | quote }}
+  {{- end }}
+
+  # Database connection details based on whether internal or external PG is used
+  {{- if .Values.postgresql.enabled }}
+  DATABASE_HOST: {{ printf "%s-postgresql" .Release.Name | quote }} # Service name of the Bitnami chart
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: {{ .Values.postgresql.auth.database | quote }}
+  DATABASE_USER: {{ .Values.postgresql.auth.username | quote }}
+  {{- else }}
+  DATABASE_HOST: {{ required "External DB host required if postgresql.enabled=false (.Values.externalDatabase.host)" .Values.externalDatabase.host | quote }}
+  DATABASE_PORT: {{ .Values.externalDatabase.port | default "5432" | quote }}
+  DATABASE_NAME: {{ required "External DB name required if postgresql.enabled=false (.Values.externalDatabase.database)" .Values.externalDatabase.database | quote }}
+  DATABASE_USER: {{ required "External DB user required if postgresql.enabled=false (.Values.externalDatabase.username)" .Values.externalDatabase.username | quote }}
+  {{- end }}

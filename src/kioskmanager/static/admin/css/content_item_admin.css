@@ -1,0 +1,4 @@
+.content-type-section {
+    /* Start hidden, JS will show the correct one */
+    display: none;
+}

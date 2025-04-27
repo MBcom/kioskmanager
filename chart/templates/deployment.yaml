@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kioskmanager.fullname" . }}
+  labels:
+    {{- include "kioskmanager.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kioskmanager.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "kioskmanager.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kioskmanager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "kioskmanager.fullname" . }}-config
+            - secretRef:
+                name: {{ include "kioskmanager.fullname" . }} # Contains DJANGO_SECRET_KEY, ADMIN_PASSWORD
+          env:
+            - name: PORT # Or GUNICORN_CMD_ARGS, depending on your entrypoint
+              value: {{ .Values.service.targetPort | quote }}
+            # Conditionally set DB password env var based on internal/external
+            {{- if .Values.postgresql.enabled }}
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # Reference the secret created by the Bitnami chart
+                  name: {{ printf "%s-postgresql" .Release.Name }}
+                  key: postgres-password
+            {{- else }}
+            # For external DB, reference the secret created by this chart
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kioskmanager.fullname" . }}
+                  key: DATABASE_PASSWORD # Key defined in secret.yaml for external DB
+            {{- end }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          livenessProbe:
+             httpGet:
+               path: /healthz/
+               port: http
+             initialDelaySeconds: 30
+             periodSeconds: 15
+             timeoutSeconds: 5
+             failureThreshold: 3
+          readinessProbe:
+             httpGet:
+               path: /healthz/
+               port: http
+             initialDelaySeconds: 10
+             periodSeconds: 10
+             timeoutSeconds: 3
+             failureThreshold: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: media-storage
+              mountPath: {{ .Values.persistence.mountPath }}
+          {{- end }}
+      {{- if .Values.persistence.enabled }}
+      volumes:
+        - name: media-storage
+          persistentVolumeClaim:
+            claimName: {{ include "kioskmanager.fullname" . }}-media
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

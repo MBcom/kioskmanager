@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Looper</title>
+    <style>
+        body { margin: 0; background-color: black; overflow: hidden; color: #ccc; font-family: sans-serif;}
+        .player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+        }
+        #videoPlayer, #websiteFrame {
+            display: none; /* Hide both initially */
+            width: 100%;
+            height: 100%;
+            border: none;
+            object-fit: contain; /* Sensible default for video */
+            background-color: black; /* Ensure bg is black */
+        }
+        .visible {
+            display: block !important;
+        }
+        #statusOverlay {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            border-radius: 3px;
+            z-index: 1000; /* Ensure it's above content */
+            display: none; /* Hidden initially */
+        }
+        #statusOverlay.error { background-color: rgba(200, 0, 0, 0.8); }
+        #statusOverlay.loading { background-color: rgba(0, 0, 150, 0.8); }
+    </style>
+</head>
+<body>
+    <div id="statusOverlay">Loading...</div>
+
+    <div class="player-container">
+        <video id="videoPlayer" controls muted autoplay playsinline>
+            </video>
+        <iframe id="websiteFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation" referrerpolicy="no-referrer">
+            </iframe>
+    </div>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const websiteFrame = document.getElementById('websiteFrame');
+        const statusOverlay = document.getElementById('statusOverlay');
+
+        let playlist = [];
+        let currentItemIndex = -1; // Start at -1, playNextItem will increment to 0
+        let websiteTimeoutId = null;
+        let browserIdentifier = null;
+        let currentGroupName = 'None';
+        const API_ENDPOINT = '/api/playlist/'; // Defined in Django URLs
+        const RETRY_DELAY_MS = 15000; // Time to wait before retrying API fetch on error
+        const RELOAD_PLAYLIST_INTERVAL_MS = 5 * 60 * 1000; // Reload playlist every 5 minutes
+
+        function showStatus(message, type = 'info') {
+            console.log(`Status [${type}]: ${message}`);
+            statusOverlay.textContent = message;
+            statusOverlay.className = type; // Set class for styling (e.g., 'error', 'loading')
+            statusOverlay.style.display = 'block';
+        }
+
+        function hideStatus() {
+            statusOverlay.style.display = 'none';
+        }
+
+        function getOrGenerateBrowserId() {
+            let id = localStorage.getItem('browserDisplayIdentifier');
+            if (!id || !isValidUUID(id)) { // Validate if existing ID is a UUID
+                // Use modern, secure UUID generation
+                if (window.crypto && window.crypto.randomUUID) {
+                     id = window.crypto.randomUUID();
+                } else {
+                     // Basic fallback (less secure/unique, avoid if possible)
+                     console.warn("Crypto.randomUUID not available, using less reliable fallback.");
+                     id = generateUUIDFallback();
+                }
+                localStorage.setItem('browserDisplayIdentifier', id);
+                console.log("Generated and stored new browser UUID:", id);
+            } else {
+                // console.log("Using existing browser UUID:", id);
+            }
+            return id;
+        }
+
+        // Basic check if string looks like a UUID
+        function isValidUUID(uuid) {
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            return uuidRegex.test(uuid);
+        }
+
+        // Fallback UUID generator (use crypto.randomUUID if available!)
+        function generateUUIDFallback() {
+             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+             });
+        }
+
+        async function fetchPlaylist() {
+            if (!browserIdentifier) {
+                browserIdentifier = getOrGenerateBrowserId();
+            }
+            showStatus(`Loading playlist for ${browserIdentifier.substring(0,8)}...`, 'loading');
+
+            try {
+                const response = await fetch(`${API_ENDPOINT}?browser_id=${encodeURIComponent(browserIdentifier)}`);
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+
+                if (data.browser_id !== browserIdentifier) {
+                     console.warn("API returned a different browser ID than expected. This shouldn't happen.");
+                     // Potentially update local storage if backend corrects it? Risky.
+                }
+
+                playlist = data.playlist || [];
+                currentGroupName = data.group_name || 'None';
+                console.log(`Playlist loaded. Group: '${currentGroupName}', Items: ${playlist.length}`);
+                // Only restart playback if the playlist content actually changed?
+                // Simple approach: always restart/resume playback after fetch.
+                hideStatus(); // Hide loading message
+                startPlayback(); // Start or continue playback with potentially new list
+
+            } catch (error) {
+                console.error("Could not fetch playlist:", error);
+                showStatus(`Error loading playlist: ${error.message}. Retrying in ${RETRY_DELAY_MS / 1000}s...`, 'error');
+                // Schedule retry
+                setTimeout(fetchPlaylist, RETRY_DELAY_MS);
+            }
+        }
+
+        function startPlayback() {
+             // Stop any existing playback before starting anew
+             clearPreviousPlayback();
+
+             if (playlist.length > 0) {
+                 currentItemIndex = -1; // Reset index
+                 showStatus(`Group: ${currentGroupName} - Playing content...`, 'info');
+                 setTimeout(hideStatus, 5000); // Hide status after 5 seconds
+                 playNextItem(); // Start the loop
+             } else {
+                 currentItemIndex = -1;
+                 console.log("Playlist is empty.");
+                 showStatus(`No content assigned. Group: ${currentGroupName}. Waiting...`, 'info');
+                 // Optionally fetch again sooner if playlist is empty
+                 // setTimeout(fetchPlaylist, 60000); // e.g., check every minute
+             }
+        }
+
+        function playNextItem() {
+            currentItemIndex++;
+            if (currentItemIndex >= playlist.length) {
+                console.log("Reached end of playlist, looping.");
+                currentItemIndex = 0; // Loop back
+            }
+
+            // If after looping, the list became empty (e.g., during a reload), stop.
+            if (playlist.length === 0 || currentItemIndex < 0) {
+                 console.log("Playlist empty or index invalid after loop/reload.");
+                 startPlayback(); // Re-evaluate state (shows 'No content')
+                 return;
+            }
+
+            playItem(currentItemIndex);
+        }
+
+        function playItem(index) {
+             clearPreviousPlayback(); // Stop previous item/timer
+
+             if (index < 0 || index >= playlist.length) {
+                 console.error("Attempted to play invalid index:", index);
+                 playNextItem(); // Try to recover by moving to next
+                 return;
+             }
+
+             const item = playlist[index];
+             console.log(`Playing index ${index}: [${item.type}] ${item.title} (ID: ${item.id})`);
+             showStatus(`Group: ${currentGroupName} | Item ${index + 1}/${playlist.length}: ${item.title}`, 'info');
+             setTimeout(hideStatus, 4000); // Show item title briefly
+
+             if (item.type === 'video') {
+                 websiteFrame.style.display = 'none'; // Hide iframe
+                 websiteFrame.src = 'about:blank'; // Clear iframe src definitively
+                 videoPlayer.style.display = 'block'; // Show video player
+
+                 if (videoPlayer.currentSrc !== item.url) { // Avoid reloading if same video plays again
+                      videoPlayer.src = item.url;
+                      videoPlayer.load();
+                 }
+
+                 videoPlayer.play().catch(error => {
+                     console.warn("Video play failed:", error);
+                     // Often due to browser autoplay policy. 'muted' helps but isn't foolproof.
+                     // No easy recovery here other than user interaction.
+                     showStatus(`Video play failed for ${item.title}. Requires interaction?`, 'error');
+                      // Consider skipping after a timeout if it fails?
+                     // setTimeout(playNextItem, 5000);
+                 });
+
+             } else if (item.type === 'website') {
+                 videoPlayer.style.display = 'none'; // Hide video player
+                 videoPlayer.pause(); // Ensure video is paused
+                 // videoPlayer.removeAttribute('src'); // Optional: remove src
+
+                 if (!item.url || !item.duration || item.duration <= 0) {
+                     console.error("Skipping website: Invalid URL or duration.", item);
+                     showStatus(`Skipping invalid website item: ${item.title}`, 'error');
+                     setTimeout(playNextItem, 1000); // Skip after 1 second
+                     return;
+                 }
+
+                 websiteFrame.style.display = 'block'; // Show iframe
+                 websiteFrame.src = item.url; // Set source
+
+                 const durationMs = item.duration * 1000;
+                 console.log(`Showing website for ${item.duration} seconds.`);
+                 websiteTimeoutId = setTimeout(() => {
+                     console.log(`Website timer ended for ${item.title}.`);
+                     websiteTimeoutId = null; // Clear the timer ID
+                     playNextItem(); // Move to the next item
+                 }, durationMs);
+
+             } else {
+                 console.warn("Unsupported content type:", item.type);
+                 showStatus(`Unsupported item type: ${item.type}. Skipping.`, 'error');
+                 setTimeout(playNextItem, 1000); // Skip after 1 second
+             }
+        }
+
+        function clearPreviousPlayback() {
+             // Stop website timer
+             if (websiteTimeoutId) {
+                 clearTimeout(websiteTimeoutId);
+                 websiteTimeoutId = null;
+                 console.log("Cleared website timer.");
+             }
+             // Stop video playback and hide
+             if (!videoPlayer.paused) {
+                 videoPlayer.pause();
+                 console.log("Paused video.");
+             }
+            // videoPlayer.style.display = 'none'; // Hide elements in playItem instead
+
+            // // Hide and clear iframe (crucial for stopping scripts/sound)
+            // websiteFrame.style.display = 'none';
+            // // Setting src to 'about:blank' is generally safer than removeAttribute
+            // if (websiteFrame.src !== 'about:blank') {
+            //      websiteFrame.src = 'about:blank';
+            //      console.log("Cleared iframe source.");
+            // }
+        }
+
+
+        // --- Event Listeners for Video Player ---
+        videoPlayer.addEventListener('ended', () => {
+            console.log("Video ended event received.");
+            playNextItem();
+        });
+
+        videoPlayer.addEventListener('error', (e) => {
+            // Handle video loading/playback errors
+            const item = playlist[currentItemIndex];
+            const errorMsg = videoPlayer.error ? `${videoPlayer.error.code}: ${videoPlayer.error.message}` : 'Unknown error';
+            console.error(`Video error playing index ${currentItemIndex} (${item?.title || 'N/A'}):`, errorMsg, e);
+            showStatus(`Video error for ${item?.title || 'item'}: ${errorMsg}. Skipping.`, 'error');
+            // Skip to the next item after a brief delay to avoid rapid error loops
+            setTimeout(playNextItem, 2000);
+        });
+
+        // --- Optional: Iframe Load Listener (Can be unreliable due to cross-origin policies) ---
+        // websiteFrame.addEventListener('load', () => {
+        //     const item = playlist[currentItemIndex];
+        //     if (item && item.type === 'website') {
+        //          console.log(`Iframe loaded: ${item.title}`);
+        //     }
+        // });
+        // websiteFrame.addEventListener('error', (e) => { // Might not fire for all errors (e.g., X-Frame-Options)
+        //      const item = playlist[currentItemIndex];
+        //      console.error(`Iframe error loading index ${currentItemIndex} (${item?.title || 'N/A'}):`, websiteFrame.src, e);
+        //      showStatus(`Iframe load error for ${item?.title || 'item'}. Skipping.`, 'error');
+        //      if (websiteTimeoutId) clearTimeout(websiteTimeoutId); // Clear timer if running
+        //      websiteTimeoutId = null;
+        //      setTimeout(playNextItem, 2000); // Skip after delay
+        // });
+
+
+        // --- Initial Load & Periodic Refresh ---
+        fetchPlaylist(); // Initial fetch
+
+        // Set interval to periodically reload the playlist
+        setInterval(fetchPlaylist, RELOAD_PLAYLIST_INTERVAL_MS);
+        console.log(`Set interval to reload playlist every ${RELOAD_PLAYLIST_INTERVAL_MS / 1000 / 60} minutes.`);
+
+    </script>
+</body>
+</html>

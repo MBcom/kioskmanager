@@ -1,0 +1,143 @@
+replicaCount: 1
+
+image:
+  repository: mbcom/kioskmanager
+  pullPolicy: IfNotPresent
+  # tag: defaults to .Chart.AppVersion
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Django specific settings
+secretKey: "" # Leave empty to auto-generate, or provide a specific Django SECRET_KEY
+
+# For the admin user creation script (reads from secrets)
+adminUser: "admin"
+adminPassword: "" # REQUIRED: Set this via --set or secrets file
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext:
+  fsGroup: 1000
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80 # Port the service listens on
+  targetPort: 8000 # Port your Django app listens on (Gunicorn/uWSGI)
+
+ingress:
+  enabled: true
+  className: "nginx" # Your ingress controller class
+  annotations:
+    # Generic annotations (adjust as needed)
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod # Example for cert-manager
+
+    # Nginx specific annotations
+    nginx.ingress.kubernetes.io/proxy-body-size: "0" # Allow large file uploads (0 = unlimited)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300" # Increase timeout for large uploads/downloads
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Custom snippet for server block - used for caching rules
+    nginx.ingress.kubernetes.io/server-snippet: |
+      # Cache media files aggressively
+      location /media/ {
+          # Assumes your MEDIA_URL is '/media/'
+          expires 30d; # Cache for 30 days in browser/proxies
+          add_header Cache-Control "public, no-transform";
+          # Optional: Nginx's internal file cache (adjust params as needed)
+          # open_file_cache max=2000 inactive=30s;
+          # open_file_cache_valid 60s;
+          # open_file_cache_min_uses 2;
+          # open_file_cache_errors on;
+          # Optional: Don't log successful media requests to reduce noise
+          access_log off;
+          log_not_found off;
+          # Try serving file directly, otherwise pass to Django (for protected media, etc.)
+          try_files $uri $uri/ @django_app;
+      }
+      # Define the named location to pass requests to the Django backend
+      location @django_app {
+          # Re-apply necessary proxy settings if needed inside named location
+          # Ensure your main proxy_pass settings target the backend correctly
+          # This part might need adjustment based on your full ingress setup
+          # Typically, the main location '/' handles the proxy_pass
+          # If you only have the /media/ location snippet, ensure '/' points correctly elsewhere.
+          # If '/' itself proxies to Django, this named location might not be strictly needed here,
+          # but is good practice if you have multiple specific locations.
+          proxy_pass http://{{ include "kioskmanager.fullname" . }}:{{ .Values.service.targetPort }};
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Port $server_port;
+          # Add other necessary proxy headers
+      }
+
+  hosts:
+    - host: chart-example.local # CHANGE THIS
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# Persistence for media files (/app/media)
+persistence:
+  enabled: true
+  # storageClass: "-" # Use default StorageClass or specify one, e.g., "standard", "gp2"
+  accessModes:
+    - ReadWriteOnce # Suitable for single Django deployment managing media
+  size: 10Gi # Adjust size as needed
+  mountPath: /app/content
+
+# PostgreSQL Dependency Configuration (Bitnami chart values)
+# See https://github.com/bitnami/charts/tree/main/bitnami/postgresql#parameters
+postgresql:
+  enabled: true # Set to false to use externalDatabase settings
+  # Use auth block for credentials when deploying the Bitnami chart
+  auth:
+    database: "dbkioskmanager"
+    username: "taskkioskmanagerpostgres"
+    # password: "" # REQUIRED if postgresql.enabled=true. Set via --set or secrets file
+  # Example: Enable persistence for the internal PostgreSQL DB
+  primary:
+    persistence:
+      enabled: true
+      size: 2Gi
+      # storageClass: "-"
+
+# External Database Configuration (if postgresql.enabled=false)
+externalDatabase:
+  host: "" # e.g., "my-external-postgres.example.com" or AWS RDS endpoint
+  port: 5432
+  database: "dbkioskmanager"
+  username: "taskkioskmanagerpostgres"
+  # password: "" # REQUIRED if postgresql.enabled=false. Set via --set or secrets file
+
+resources: 
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 32Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

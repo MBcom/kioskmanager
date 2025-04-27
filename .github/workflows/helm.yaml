@@ -1,0 +1,41 @@
+name: Build and Publish Helm Chart
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+    paths:
+      - 'chart/**'  # Trigger only if files in the chart directory are modified
+  pull_request:
+    paths:
+      - 'chart/**'
+
+jobs:
+  build-and-publish:
+    name: Build and Publish Helm Chart
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Helm
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.12.0  # Specify the Helm version
+
+    # Step 3: Create Helm package
+    - name: Package Helm Chart
+      run: |
+        helm lint ./chart  # Lint the chart to ensure it is valid
+        helm package ./chart --destination ./helm-packages
+
+    # Step 4: Publish to GitHub Pages
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./helm-packages
+        publish_branch: gh-pages  # Publish to the gh-pages branch

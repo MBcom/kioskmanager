@@ -1,0 +1,17 @@
+# Common Helm ignore rules
+.DS_Store
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+# Python cache files/folders
+__pycache__/
+*.py[cod]
+*$py.class
+# Env files (should not be in chart)
+.env
+# Git files
+.git/
+.gitignore
+# Add other files/dirs to ignore if needed
