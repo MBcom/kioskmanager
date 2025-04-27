@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: mbcom/kioskmanager
+  repository: ghcr.io/mbcom/kioskmanager
   pullPolicy: IfNotPresent
   # tag: defaults to .Chart.AppVersion
   tag: ""

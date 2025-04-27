@@ -89,7 +89,7 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | Parameter                      | Description                                                                                                | Default Value                      |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | `replicaCount`                 | Number of Kioskmanager application pods.                                                                   | `1`                                |
-| `image.repository`             | **Required.** Docker image repository for the Kioskmanager application.                                       | `mbcom/kioskmanager` |
+| `image.repository`             | **Required.** Docker image repository for the Kioskmanager application.                                       | `ghcr.io/mbcom/kioskmanager` |
 | `image.pullPolicy`             | Image pull policy.                                                                                         | `IfNotPresent`                     |
 | `image.tag`                    | Image tag. Defaults to `.Chart.AppVersion` if not set.                                                     | `""`                               |
 | `imagePullSecrets`             | List of secrets for pulling images from private registries.                                                | `[]`                               |
