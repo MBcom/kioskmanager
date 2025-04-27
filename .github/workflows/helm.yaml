@@ -30,6 +30,7 @@ jobs:
     - name: Package Helm Chart
       run: |
         helm lint ./chart  # Lint the chart to ensure it is valid
+        helm dependency update ./chart  # Update dependencies if any
         helm package ./chart --destination ./helm-packages
 
     # Step 4: Publish to GitHub Pages
