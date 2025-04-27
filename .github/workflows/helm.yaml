@@ -6,9 +6,11 @@ on:
       - main  # Trigger on pushes to the main branch
     paths:
       - 'chart/**'  # Trigger only if files in the chart directory are modified
+      - .github/workflows/helm.yaml  # Trigger if this workflow file is modified
   pull_request:
     paths:
       - 'chart/**'
+      - .github/workflows/helm.yaml  # Trigger if this workflow file is modified
 
 jobs:
   build-and-publish:
