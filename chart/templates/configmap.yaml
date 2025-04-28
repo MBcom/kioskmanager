@@ -11,7 +11,11 @@ data:
   MEDIA_ROOT: {{ .Values.persistence.mountPath | quote }}
   {{- end }}
 
-  CSRF_TRUSTED_ORIGINS: {{ .Values.ingress.host | quote }}
+  {{- if .Values.ingress.tls.enabled }}
+  CSRF_TRUSTED_ORIGINS: https://{{ .Values.ingress.host }}/
+  {{- else }}
+  CSRF_TRUSTED_ORIGINS: http://{{ .Values.ingress.host }}/
+  {{- end }}
 
   # Database connection details based on whether internal or external PG is used
   {{- if .Values.postgresql.enabled }}

@@ -49,7 +49,7 @@ ingress:
   host: "chart-example.local" # Replace with your domain
   path: "/"
   tls: 
-    enabled: false # Set to true if using TLS
+    enabled: true # Set to true if using TLS
     secretName: "kioskmanager"
 # Persistence for media files (/app/media)
 persistence:
