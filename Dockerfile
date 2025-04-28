@@ -24,4 +24,4 @@ EXPOSE 8000
 USER 1000
 
 # Run the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "--bind", ":8000", "--workers", "1", "kioskmanager.wsgi"]

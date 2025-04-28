@@ -8,8 +8,12 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http # Corresponds to the container port name 'http'
+      targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
+    - port: 80 # Nginx port
+      targetPort: 80
+      protocol: TCP
+      name: nginx
   selector:
     {{- include "kioskmanager.selectorLabels" . | nindent 4 }}

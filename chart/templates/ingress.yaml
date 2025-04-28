@@ -28,4 +28,18 @@ spec:
                 name: {{ include "kioskmanager.fullname" $ }}
                 port:
                   name: http # Matches the service port name
+          - path: {{  .Values.ingress.path }}content/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "kioskmanager.fullname" $ }}
+                port:
+                  name: nginx
+          - path: {{  .Values.ingress.path }}static/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "kioskmanager.fullname" $ }}
+                port:
+                  name: nginx
 {{- end }}

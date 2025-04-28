@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'kioskmanager.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-if DEBUG:
+if True:
     # Use SQLite for development
     DATABASES = {
         'default': {
@@ -160,3 +160,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files (uploaded content)
 MEDIA_URL = '/content/'  # URL to access media files
 MEDIA_ROOT = BASE_DIR  # Directory where media files are stored
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Directory where static files are collected

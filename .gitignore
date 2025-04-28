@@ -3,3 +3,4 @@ src/db.sqlite3
 src/**/__pycache__/
 chart/charts/
 helm-packages/
+src/static/

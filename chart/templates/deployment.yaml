@@ -35,6 +35,7 @@ spec:
               set -e
               # Run migrations and collectstatic
               python manage.py migrate --noinput
+              python manage.py collectstatic --noinput
           envFrom:
             - configMapRef:
                 name: {{ include "kioskmanager.fullname" . }}-config
@@ -56,6 +57,9 @@ spec:
                   name: {{ include "kioskmanager.fullname" . }}
                   key: DATABASE_PASSWORD # Key defined in secret.yaml for external DB
             {{- end }}
+          volumeMounts:
+            - name: static-files
+              mountPath: /app/static
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -111,14 +115,34 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
+            - name: static-files
+              mountPath: /app/static/
             - name: media-storage
               mountPath: {{ .Values.persistence.mountPath }}
           {{- end }}
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - name: nginx
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: static-files
+              mountPath: /usr/share/nginx/html/static
+            - name: media-storage
+              mountPath: /usr/share/nginx/html/content
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
       {{- if .Values.persistence.enabled }}
       volumes:
+        - name: static-files
+          emptyDir: {}
         - name: media-storage
           persistentVolumeClaim:
             claimName: {{ include "kioskmanager.fullname" . }}-media
+        - name: nginx-config
+          configMap:
+            name: {{ include "kioskmanager.fullname" . }}-nginx-config
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

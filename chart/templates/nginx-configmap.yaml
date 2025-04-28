@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kioskmanager.fullname" . }}-nginx-config
+  labels:
+    {{- include "kioskmanager.labels" . | nindent 4 }}
+data:
+  default.conf: |
+    server {
+        listen 80;
+
+        location /static/ {
+            root /usr/share/nginx/html;
+        }
+
+        location /content/ {
+            root /usr/share/nginx/html;
+            expires 30d;
+            add_header Cache-Control "public";
+        }
+
+        location / {
+            return 404;
+        }
+    }

@@ -30,7 +30,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80 # Port the service listens on
+  port: 8000 # Port the service listens on
   targetPort: 8000 # Port your Django app listens on (Gunicorn/uWSGI)
 
 ingress:
@@ -45,12 +45,6 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-body-size: "0" # Allow large file uploads (0 = unlimited)
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300" # Increase timeout for large uploads/downloads
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-    # Custom snippet for server block - used for caching rules
-    nginx.ingress.kubernetes.io/configuration-snippet : |
-      if ($request_uri ~* /media/) {
-        expires 30d;
-        add_header Cache-Control "public";
-      }
 
   host: "chart-example.local" # Replace with your domain
   path: "/"
