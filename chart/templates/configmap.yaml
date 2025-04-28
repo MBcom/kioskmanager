@@ -12,9 +12,9 @@ data:
   {{- end }}
 
   {{- if .Values.ingress.tls.enabled }}
-  CSRF_TRUSTED_ORIGINS: https://{{ .Values.ingress.host }}/
+  CSRF_TRUSTED_ORIGINS: https://{{ .Values.ingress.host }}
   {{- else }}
-  CSRF_TRUSTED_ORIGINS: http://{{ .Values.ingress.host }}/
+  CSRF_TRUSTED_ORIGINS: http://{{ .Values.ingress.host }}
   {{- end }}
 
   # Database connection details based on whether internal or external PG is used
