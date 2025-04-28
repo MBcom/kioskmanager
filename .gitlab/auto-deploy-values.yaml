@@ -1,0 +1,4 @@
+adminPassword: Start123
+postgresql:
+  auth:
+    password: Start123

@@ -52,8 +52,6 @@ It provides a central admin interface to upload content, organize it into playli
         helm install kioskmanager kioskmanager/kioskmanager \
           --namespace <your-namespace> \
           --create-namespace \
-          --set image.repository=<your-image-repo>/kioskmanager \
-          --set image.tag=<your-image-tag> \
           --set ingress.hosts[0].host=kioskmanager.yourdomain.com \
           --set adminPassword=<your-secure-admin-password> \
           --set postgresql.auth.password=<your-secure-db-password>
@@ -64,8 +62,6 @@ It provides a central admin interface to upload content, organize it into playli
         helm install kioskmanager kioskmanager/kioskmanager \
           --namespace <your-namespace> \
           --create-namespace \
-          --set image.repository=<your-image-repo>/kioskmanager \
-          --set image.tag=<your-image-tag> \
           --set ingress.hosts[0].host=kioskmanager.yourdomain.com \
           --set adminPassword=<your-secure-admin-password> \
           --set postgresql.enabled=false \
@@ -98,8 +94,6 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | `secretKey`                    | Django `SECRET_KEY`. If empty, a random one is generated and stored in the K8s Secret.                     | `""`                               |
 | `adminUser`                    | Username for the admin user created by the startup script.                                                 | `admin`                            |
 | `adminPassword`                | **Required.** Password for the admin user. Set via `--set` or values file. Stored in K8s Secret.           | `""`                               |
-| `serviceAccount.create`        | Whether to create a service account for the application pods.                                              | `true`                             |
-| `serviceAccount.name`          | Name of the service account to use (if `create=false`) or create (if `create=true`).                       | `""` (defaults to fullname)        |
 | `podAnnotations`               | Annotations to add to the application pods.                                                                | `{}`                               |
 | `podSecurityContext`           | Security context for the application pods.                                                                 | `{}`                               |
 | `securityContext`              | Security context for the application container.                                                            | `{}`                               |

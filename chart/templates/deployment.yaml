@@ -22,9 +22,40 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "kioskmanager.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-db
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              #!/bin/sh
+              set -e
+              # Run migrations and collectstatic
+              python manage.py migrate --noinput
+          envFrom:
+            - configMapRef:
+                name: {{ include "kioskmanager.fullname" . }}-config
+            - secretRef:
+                name: {{ include "kioskmanager.fullname" . }} # Contains DJANGO_SECRET_KEY, ADMIN_PASSWORD
+          env:
+            {{- if .Values.postgresql.enabled }}
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # Reference the secret created by the Bitnami chart
+                  name: {{ printf "%s-postgresql" .Release.Name }}
+                  key: password
+            {{- else }}
+            # For external DB, reference the secret created by this chart
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kioskmanager.fullname" . }}
+                  key: DATABASE_PASSWORD # Key defined in secret.yaml for external DB
+            {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -46,7 +77,7 @@ spec:
                 secretKeyRef:
                   # Reference the secret created by the Bitnami chart
                   name: {{ printf "%s-postgresql" .Release.Name }}
-                  key: postgres-password
+                  key: password
             {{- else }}
             # For external DB, reference the secret created by this chart
             - name: DATABASE_PASSWORD

@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled }}
+1. The application is accessible via the following URL:
+
+   {{- if .Values.ingress.tls.enabled }}
+   https://{{ .Values.ingress.host }}{{ .Values.ingress.path }}
+   {{- else }}
+   http://{{ .Values.ingress.host }}{{ .Values.ingress.path }}
+   {{- end }}
+
+2. Point any kiosk bowser to 
+   {{- if .Values.ingress.tls.enabled }}
+   https://{{ .Values.ingress.host }}{{ .Values.ingress.path }}play/
+   {{- else }}
+   http://{{ .Values.ingress.host }}{{ .Values.ingress.path }}play/
+   {{- end }}
+
+{{- else }}
+1. The application is accessible via the following NodePort or ClusterIP service:
+
+   {{- if eq .Values.service.type "NodePort" }}
+   http://<NodeIP>:{{ (index .spec.ports 0).nodePort }}
+   {{- else }}
+   http://<ClusterIP>:{{ .Values.service.port }}
+   {{- end }}
+
+   Replace `<NodeIP>` or `<ClusterIP>` with the appropriate IP address.
+
+2. Point any browser to 
+   {{- if eq .Values.service.type "NodePort" }}
+   http://<NodeIP>:{{ (index .spec.ports 0).nodePort }}/play/
+   {{- else }}
+   http://<ClusterIP>:{{ .Values.service.port }}/play/
+   {{- end }}
+{{- end }}
+
+3. Login with `admin` and user admin password to start configuring your first kiosk screens.
+
+# Troubleshooting
+If your pod does not start and you are using an external database, ensure the database is reachable.
