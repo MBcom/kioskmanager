@@ -11,6 +11,8 @@ data:
   MEDIA_ROOT: {{ .Values.persistence.mountPath | quote }}
   {{- end }}
 
+  CSRF_TRUSTED_ORIGINS: {{ .Values.ingress.host | quote }}
+
   # Database connection details based on whether internal or external PG is used
   {{- if .Values.postgresql.enabled }}
   DATABASE_HOST: {{ printf "%s-postgresql" .Release.Name | quote }} # Service name of the Bitnami chart
