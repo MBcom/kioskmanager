@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'kioskmanager.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-if True:
+if DEBUG:
     # Use SQLite for development
     DATABASES = {
         'default': {
