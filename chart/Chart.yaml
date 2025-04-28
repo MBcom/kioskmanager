@@ -2,8 +2,8 @@ apiVersion: v2
 name: kioskmanager
 description: A Helm chart for deploying the Kioskmanager application.
 type: application
-version: 0.1.2 # Your chart version
-appVersion: "v1.0.2" # Your application version
+version: 0.1.3 # Your chart version
+appVersion: "v1.0.3" # Your application version
 
 # Optional Dependency: Bitnami PostgreSQL chart
 dependencies:
