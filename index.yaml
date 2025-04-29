@@ -2,6 +2,21 @@ apiVersion: v1
 entries:
   kioskmanager:
   - apiVersion: v2
+    appVersion: v1.0.5
+    created: "2025-04-29T20:15:23.373146406Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.3
+    description: A Helm chart for deploying the Kioskmanager application.
+    digest: 64656b412bf71f65cf88556ed00e5d367069e6a5627c3bf4e3d33d8d1f4ea398
+    name: kioskmanager
+    type: application
+    urls:
+    - https://github.com/MBcom/kioskmanager/releases/download/kioskmanager-0.2.0/kioskmanager-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: v1.0.4
     created: "2025-04-28T20:59:48.945446053Z"
     dependencies:
@@ -76,4 +91,4 @@ entries:
     urls:
     - https://github.com/MBcom/kioskmanager/releases/download/kioskmanager-0.1.2/kioskmanager-0.1.2.tgz
     version: 0.1.2
-generated: "2025-04-28T20:59:48.945468315Z"
+generated: "2025-04-29T20:15:23.373171744Z"
