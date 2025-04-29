@@ -1,0 +1,15 @@
+{{- if .Values.backup.enabled }}
+# This file is part of the Kioskmanager Helm chart.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "kioskmanager.fullname" . }}-backup
+  labels:
+    {{- include "kioskmanager.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.backup.storage | default "10Gi" }}
+{{- end }}

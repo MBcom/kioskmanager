@@ -76,6 +76,11 @@ postgresql:
       size: 2Gi
       # storageClass: "-"
 
+backup:
+  enabled: true
+  schedule: "0 0 * * 0"  # Weekly on Sunday at midnight
+  storage: 10Gi  # Storage size for backups
+
 # External Database Configuration (if postgresql.enabled=false)
 externalDatabase:
   host: "" # e.g., "my-external-postgres.example.com" or AWS RDS endpoint

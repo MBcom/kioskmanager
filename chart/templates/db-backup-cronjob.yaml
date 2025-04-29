@@ -1,0 +1,53 @@
+{{- if .Values.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "kioskmanager.fullname" . }}-db-backup
+  labels:
+    {{- include "kioskmanager.labels" . | nindent 4 }}
+spec:
+  schedule: "0 0 * * 0"  # Run at midnight every Sunday
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: bitnami/postgresql:{{ .Values.postgresql.image.tag }}
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              PGDUMP_FILE="/backups/backup_${TIMESTAMP}.sql"
+              echo Creating backup file: ${PGDUMP_FILE}
+              pg_dump -h {{ .Release.Name }}-postgresql \
+                -U {{ .Values.postgresql.auth.username }} \
+                -d {{ .Values.postgresql.auth.database }} \
+                -f ${PGDUMP_FILE} && echo "Backup created successfully." || echo "Backup failed."
+              # Cleanup old backups (keep last 10)
+              echo "Cleaning up old backups..."
+              cd /backups && ls -t | tail -n +11 | xargs -r rm --
+              echo "Old backups cleaned up."
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql
+                  key: password
+            volumeMounts:
+            - name: backup-volume
+              mountPath: /backups
+          securityContext:
+            runAsUser: 1001 # Bitnami PostgreSQL runs as UID 1001
+            fsGroup: 1001 # Ensure the volume is writable by the PostgreSQL user
+          volumes:
+          - name: backup-volume
+            persistentVolumeClaim:
+              claimName: {{ include "kioskmanager.fullname" . }}-backup
+          restartPolicy: OnFailure
+{{- end }}

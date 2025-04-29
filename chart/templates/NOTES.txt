@@ -33,7 +33,7 @@
    {{- end }}
 {{- end }}
 
-3. Login with `admin` and user admin password to start configuring your first kiosk screens.
+3. Login with `admin` and your admin password to configure your first kiosk screens.
 
 # Troubleshooting
 If your pod does not start and you are using an external database, ensure the database is reachable.
