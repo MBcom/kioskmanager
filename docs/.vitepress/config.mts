@@ -42,7 +42,8 @@ export default defineConfig({
             { text: 'Overview', link: '/admin-guide/' }, // admin-guide/index.md
             { text: 'Installation (Helm)', link: '/admin-guide/installation' },
             { text: 'Connecting & Managing Displays', link: '/admin-guide/connecting-displays' },
-            { text: 'User Management', link: '/admin-guide/user-management' }
+            { text: 'User Management', link: '/admin-guide/user-management' },
+            { text: 'Setting Up a Kiosk Device', link: '/admin-guide/kiosk-device-example.md' }
         ]
       }
       // Add more sections/items as needed
@@ -55,5 +56,12 @@ export default defineConfig({
       message: 'Kioskmanager Documentation',
       copyright: `Copyright © 2025-present MBcom`
     },
+    editLink: {
+      pattern: 'https://github.com/mbcom/kioskmanager/edit/main/docs/:path',
+      text: 'Edit this page on GitHub'
+    },
+    search: {
+      provider: 'local'
+    }
   }
 })
