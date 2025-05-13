@@ -27,10 +27,14 @@ jobs:
           node-version: '22' # Or your preferred Node.js LTS version
 
       - name: Install Dependencies (using pnpm)
-        run: npm ci
+        run: |
+          cd docs
+          npm ci
 
       - name: Build VitePress Site
-        run: npm run docs:build
+        run: |
+         cd docs
+         npm run docs:build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

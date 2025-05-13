@@ -6,4 +6,5 @@ helm-packages/
 src/static/
 docs/node_modules/
 docs/.vitepress/cache/
+docs/.vitepress/dist/
 docs/docs/
