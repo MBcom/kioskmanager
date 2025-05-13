@@ -1,0 +1,44 @@
+name: Deploy VitePress Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Or your default branch (e.g., master)
+    paths:
+      - 'docs/**' # Trigger on changes within the docs folder
+      - '.github/workflows/deploy-vitepress.yml' # Trigger if workflow itself changes
+
+# Allow this job to clone the repo and push to the gh-pages branch
+permissions:
+  contents: write
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for git info like last updated
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Or your preferred Node.js LTS version
+
+      - name: Install Dependencies (using pnpm)
+        run: npm ci
+
+      - name: Build VitePress Site
+        run: npm run docs:build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/.vitepress/dist # VitePress default build output directory
+          # publish_branch: gh-pages # Default is gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Deploy docs: ${{ github.event.head_commit.message }} (commit ${{ github.sha }})'
+          keep_files: true # Set to true if you have other files in gh-pages branch you want to keep

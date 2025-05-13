@@ -4,3 +4,6 @@ src/**/__pycache__/
 chart/charts/
 helm-packages/
 src/static/
+docs/node_modules/
+docs/.vitepress/cache/
+docs/docs/
