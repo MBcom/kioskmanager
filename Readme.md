@@ -25,6 +25,11 @@ It provides a central admin interface to upload content, organize it into playli
 * **Helm Deployment:** Includes a Helm chart for simplified deployment on Kubernetes.
 * **Video Caching:** Nginx Ingress configuration snippet included for long-term caching of video assets.
 
+# Getting Started
+For detailed documentation for both administrators and end users, please visit [Kioskmanager Documentation](https://mbcom.github.io/kioskmanager/).
+
+For deployment instructions, you can follow the steps outlined in this README.
+
 ## Prerequisites for Deployment
 
 * Kubernetes cluster (v1.19+ recommended).

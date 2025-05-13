@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Kioskmanager",
   description: "Digital Signage Content Management",
+  base: '/kioskmanager/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
