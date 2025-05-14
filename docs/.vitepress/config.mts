@@ -43,7 +43,7 @@ export default defineConfig({
             { text: 'Installation (Helm)', link: '/admin-guide/installation' },
             { text: 'Connecting & Managing Displays', link: '/admin-guide/connecting-displays' },
             { text: 'User Management', link: '/admin-guide/user-management' },
-            { text: 'Setting Up a Kiosk Device', link: '/admin-guide/kiosk-device-example.md' }
+            { text: 'Setting Up a Kiosk Device', link: '/admin-guide/kiosk-device-example.md' },
             { text: 'Backup and Restore', link: '/admin-guide/backup-restore.md' }
         ]
       }
