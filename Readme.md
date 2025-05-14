@@ -133,3 +133,34 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | `affinity`                     | Affinity rules for pod assignment.                                                                         | `{}`                               |
 
 Refer to the `values.yaml` file for detailed default annotations and structure. For parameters related to the Bitnami PostgreSQL subchart (`postgresql.*`), please consult the official [Bitnami PostgreSQL Helm Chart documentation](https://github.com/bitnami/charts/tree/main/bitnami/postgresql).
+
+## Development Guide
+
+To set up the development environment for Kioskmanager, follow these steps:
+
+1. **Clone the Repository:**
+    ```bash
+    git clone https://github.com/mbcom/kioskmanager.git
+    cd kioskmanager
+    ```
+
+2. **Set Environment Variables:**
+    Ensure the `DJANGO_DEBUG` environment variable is set to `True` for local development:
+    ```bash
+    export DJANGO_DEBUG=True
+    ```
+
+3. **Run the Application Locally:**
+    The application uses SQLite as the default database for local development. Start the Django development server:
+    ```bash
+    python manage.py runserver
+    ```
+
+4. **Serve Documentation Locally:**
+    Navigate to the `docs` folder and run the following command to serve the documentation locally:
+    ```bash
+    npm run docs:dev
+    ```
+    The documentation will be available at `http://localhost:8080`.
+
+Happy coding!
