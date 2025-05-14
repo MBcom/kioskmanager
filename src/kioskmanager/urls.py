@@ -37,3 +37,6 @@ urlpatterns = [
 ] + i18n_patterns(
         path("admin/", admin.site.urls),
     ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.OIDC_ENABLED:
+    urlpatterns.append(path('oidc/', include('mozilla_django_oidc.urls')))

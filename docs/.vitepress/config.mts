@@ -41,6 +41,7 @@ export default defineConfig({
         items: [
             { text: 'Overview', link: '/admin-guide/' }, // admin-guide/index.md
             { text: 'Installation (Helm)', link: '/admin-guide/installation' },
+            { text: 'Authentication', link: '/admin-guide/authentication' },
             { text: 'Connecting & Managing Displays', link: '/admin-guide/connecting-displays' },
             { text: 'User Management', link: '/admin-guide/user-management' },
             { text: 'Setting Up a Kiosk Device', link: '/admin-guide/kiosk-device-example.md' }

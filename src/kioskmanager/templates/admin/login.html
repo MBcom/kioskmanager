@@ -1,0 +1,18 @@
+{% extends 'admin/login.html' %}
+
+{% load i18n static socialaccount %}
+
+{% block login_after %}
+{% comment %} THIS IS MY SIGNIN BUTTON {% endcomment %}
+<div class="oauth-buttons flex justify-center">
+    {% if OIDC_ENABLED %}
+    <div class="mt-1 w-full sm:w-96">
+            <div class="submit-row">
+                <a href="{% url 'oidc_authentication_init' %}" class="border flex flex-row font-semibold group items-center justify-center py-2 rounded-md text-sm w-full shadow-md">
+                    Sign in with {{ OIDC_PROVIDER_NAME|default:"SSO" }}
+                </button>
+            </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

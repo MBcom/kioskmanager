@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import logging # For logging OIDC setup
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -164,3 +167,131 @@ MEDIA_URL = '/'  # URL to access media files
 MEDIA_ROOT = BASE_DIR  # Directory where media files are stored
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # Directory where static files are collected
+
+AUTH_METHOD = os.environ.get('DJANGO_AUTH_METHOD', 'standard').lower()
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend', # Standard Django auth
+]
+
+OIDC_ENABLED = (AUTH_METHOD == 'oidc')
+
+if OIDC_ENABLED:
+    logger.info("OIDC Authentication is ENABLED.")
+    INSTALLED_APPS.append('mozilla_django_oidc')
+    AUTHENTICATION_BACKENDS.insert(0, 'mozilla_django_oidc.auth.OIDCAuthenticationBackend') # Try OIDC first
+
+    # --- Required OIDC Settings (from environment variables) ---
+    OIDC_RP_CLIENT_ID = os.environ.get('OIDC_RP_CLIENT_ID')
+    OIDC_RP_CLIENT_SECRET = os.environ.get('OIDC_RP_CLIENT_SECRET')
+
+    OIDC_PROVIDER_NAME = os.environ.get('OIDC_PROVIDER_NAME', 'SSO')
+
+    # Option 1: Using .well-known/openid-configuration (preferred if IdP supports it)
+    # Helm chart should set OIDC_OP_BASE_DISCOVERY_URL if this method is used.
+    OIDC_OP_BASE_DISCOVERY_URL = os.environ.get('OIDC_OP_BASE_DISCOVERY_URL') # e.g., https://idp.example.com/auth/realms/myrealm
+    if OIDC_OP_BASE_DISCOVERY_URL:
+        logger.info(f"Using OIDC auto-discovery from: {OIDC_OP_BASE_DISCOVERY_URL}")
+        OIDC_OP_AUTHORIZATION_ENDPOINT = f"{OIDC_OP_BASE_DISCOVERY_URL.rstrip('/')}/protocol/openid-connect/auth"
+        OIDC_OP_TOKEN_ENDPOINT = f"{OIDC_OP_BASE_DISCOVERY_URL.rstrip('/')}/protocol/openid-connect/token"
+        OIDC_OP_USER_ENDPOINT = f"{OIDC_OP_BASE_DISCOVERY_URL.rstrip('/')}/protocol/openid-connect/userinfo"
+        OIDC_OP_JWKS_ENDPOINT = f"{OIDC_OP_BASE_DISCOVERY_URL.rstrip('/')}/protocol/openid-connect/certs"
+        OIDC_OP_ISSUER_ENDPOINT = OIDC_OP_BASE_DISCOVERY_URL # Sometimes needed explicitly for validation
+    else:
+        # Option 2: Explicit endpoints (if discovery URL is not provided or not working)
+        logger.info("Using explicit OIDC endpoints (OIDC_OP_BASE_DISCOVERY_URL not set).")
+        OIDC_OP_AUTHORIZATION_ENDPOINT = os.environ.get('OIDC_OP_AUTHORIZATION_ENDPOINT')
+        OIDC_OP_TOKEN_ENDPOINT = os.environ.get('OIDC_OP_TOKEN_ENDPOINT')
+        OIDC_OP_USER_ENDPOINT = os.environ.get('OIDC_OP_USER_ENDPOINT')
+        OIDC_OP_JWKS_ENDPOINT = os.environ.get('OIDC_OP_JWKS_ENDPOINT') # Highly recommended
+        OIDC_OP_ISSUER_ENDPOINT = os.environ.get('OIDC_OP_ISSUER_ENDPOINT') # Often required
+
+    OIDC_RP_SIGN_ALGO = os.environ.get('OIDC_RP_SIGN_ALGO', 'RS256')
+    OIDC_RP_SCOPES = os.environ.get('OIDC_RP_SCOPES', 'openid email profile groups') # Add 'groups' or your group claim scope
+
+    # --- User Creation and Attribute Mapping ---
+    OIDC_CREATE_USER = os.environ.get('OIDC_CREATE_USER', 'True').lower() == 'true'
+    OIDC_UPDATE_USER_ATTRIBUTES = os.environ.get('OIDC_UPDATE_USER_ATTRIBUTES', 'True').lower() == 'true'
+
+    # Define how OIDC claims map to Django User model fields
+    # Example: Map 'preferred_username' or 'email' from OIDC token to Django username
+    # Default is to use 'sub' claim, which is unique but not human-readable
+    # You MUST ensure the chosen claim is unique and suitable as a username.
+    # A common choice is 'email' if emails are unique in your IdP.
+    OIDC_USERNAME_CLAIM = os.environ.get('OIDC_USERNAME_CLAIM', 'email')
+    def generate_username_from_claim(claims):
+        username_claim = OIDC_USERNAME_CLAIM
+        username = claims.get(username_claim)
+        if not username:
+            logger.error(f"OIDC username claim '{username_claim}' not found in claims: {claims}")
+            # Fallback to 'sub' if preferred claim is missing, to ensure user creation doesn't fail
+            username = claims.get('sub')
+        return username
+    OIDC_USERNAME_ALGO = generate_username_from_claim
+
+
+    OIDC_CLAIM_MAPPING = {
+        "first_name": os.environ.get("OIDC_CLAIM_FIRST_NAME", "given_name"),
+        "last_name": os.environ.get("OIDC_CLAIM_LAST_NAME", "family_name"),
+        "email": os.environ.get("OIDC_CLAIM_EMAIL", "email"),
+    }
+
+    # --- Group Mapping from OIDC Claim ---
+    OIDC_GROUPS_CLAIM_NAME = os.environ.get('OIDC_GROUPS_CLAIM_NAME') # e.g., "groups" or "roles"
+    if OIDC_GROUPS_CLAIM_NAME:
+        OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED = os.environ.get('OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED', 'True').lower() == 'true'
+        OIDC_RP_DJANGO_GROUPS_SYNC_CLAIM = OIDC_GROUPS_CLAIM_NAME
+        OIDC_RP_CREATE_NEW_GROUPS = os.environ.get('OIDC_RP_CREATE_NEW_GROUPS', 'False').lower() == 'true'
+        logger.info(f"OIDC Group Sync ENABLED. Claim: '{OIDC_GROUPS_CLAIM_NAME}', Create Missing: {OIDC_RP_CREATE_NEW_GROUPS}")
+    else:
+        OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED = False
+        logger.info("OIDC Group Sync DISABLED (OIDC_GROUPS_CLAIM_NAME not set).")
+
+    # --- Staff/Superuser Status Mapping from OIDC Claim ---
+    # Example: if OIDC claim 'kiosk_roles' contains 'admin', make user staff.
+    OIDC_STAFF_CLAIM_NAME = os.environ.get('OIDC_STAFF_CLAIM_NAME') # e.g., "kiosk_roles"
+    OIDC_STAFF_CLAIM_VALUE = os.environ.get('OIDC_STAFF_CLAIM_VALUE') # e.g., "platform_admin" or "kiosk_manager"
+    if OIDC_STAFF_CLAIM_NAME and OIDC_STAFF_CLAIM_VALUE:
+        def user_is_staff(claims):
+            claim_values = claims.get(OIDC_STAFF_CLAIM_NAME, [])
+            if isinstance(claim_values, list):
+                return OIDC_STAFF_CLAIM_VALUE in claim_values
+            return claim_values == OIDC_STAFF_CLAIM_VALUE
+        OIDC_USER_IS_STAFF_FUNCTION = user_is_staff
+        logger.info(f"OIDC Staff status mapping ENABLED. Claim: '{OIDC_STAFF_CLAIM_NAME}', Value for True: '{OIDC_STAFF_CLAIM_VALUE}'.")
+
+    OIDC_SUPERUSER_CLAIM_NAME = os.environ.get('OIDC_SUPERUSER_CLAIM_NAME')
+    OIDC_SUPERUSER_CLAIM_VALUE = os.environ.get('OIDC_SUPERUSER_CLAIM_VALUE')
+    if OIDC_SUPERUSER_CLAIM_NAME and OIDC_SUPERUSER_CLAIM_VALUE:
+        def user_is_superuser(claims):
+            claim_values = claims.get(OIDC_SUPERUSER_CLAIM_NAME, [])
+            if isinstance(claim_values, list):
+                return OIDC_SUPERUSER_CLAIM_VALUE in claim_values
+            return claim_values == OIDC_SUPERUSER_CLAIM_VALUE
+        OIDC_USER_IS_SUPERUSER_FUNCTION = user_is_superuser
+        logger.info(f"OIDC Superuser status mapping ENABLED. Claim: '{OIDC_SUPERUSER_CLAIM_NAME}', Value for True: '{OIDC_SUPERUSER_CLAIM_VALUE}'.")
+
+
+    # --- Redirect URLs ---
+    # LOGIN_URL = 'oidc_authentication_init' # Can cause redirect loops if not careful
+    LOGIN_REDIRECT_URL = os.environ.get('LOGIN_REDIRECT_URL', '/admin/')
+    LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', '/')
+
+    # Nonce/State storage - Ensure sessions are working correctly.
+    OIDC_STORE_ID_TOKEN = True # Useful for debugging, can be False in production if not needed
+    OIDC_STATE_SIZE = int(os.environ.get('OIDC_STATE_SIZE', '32'))
+    OIDC_NONCE_SIZE = int(os.environ.get('OIDC_NONCE_SIZE', '32'))
+
+    # Validate required OIDC settings
+    if not OIDC_RP_CLIENT_ID or not OIDC_RP_CLIENT_SECRET:
+        logger.error("OIDC_RP_CLIENT_ID or OIDC_RP_CLIENT_SECRET not set. OIDC will likely fail.")
+    if not OIDC_OP_BASE_DISCOVERY_URL and (not OIDC_OP_AUTHORIZATION_ENDPOINT or not OIDC_OP_TOKEN_ENDPOINT or not OIDC_OP_USER_ENDPOINT):
+        logger.error("OIDC discovery URL or explicit OIDC endpoints (Authorization, Token, UserInfo) are not fully configured. OIDC will likely fail.")
+
+else:
+    logger.info("OIDC Authentication is DISABLED. Using standard Django authentication.")
+
+TEMPLATES[0]['OPTIONS']['context_processors'].extend([
+    # ... other context processors
+    'player.context_processors.oidc_settings_processor', # Add this
+])

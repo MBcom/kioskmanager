@@ -90,6 +90,13 @@ spec:
                   name: {{ include "kioskmanager.fullname" . }}
                   key: DATABASE_PASSWORD # Key defined in secret.yaml for external DB
             {{- end }}
+            {{- if eq .Values.auth.method "oidc" }}
+            - name: OIDC_RP_CLIENT_SECRET # This specific one comes from the main app secret
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kioskmanager.fullname" . }}
+                  key: OIDC_RP_CLIENT_SECRET
+            {{- end }}
 
           ports:
             - name: http
