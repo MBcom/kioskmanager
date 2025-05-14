@@ -44,6 +44,7 @@ export default defineConfig({
             { text: 'Connecting & Managing Displays', link: '/admin-guide/connecting-displays' },
             { text: 'User Management', link: '/admin-guide/user-management' },
             { text: 'Setting Up a Kiosk Device', link: '/admin-guide/kiosk-device-example.md' }
+            { text: 'Backup and Restore', link: '/admin-guide/backup-restore.md' }
         ]
       }
       // Add more sections/items as needed

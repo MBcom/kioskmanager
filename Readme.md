@@ -131,6 +131,9 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | `nodeSelector`                 | Node selector constraints for pod assignment.                                                              | `{}`                               |
 | `tolerations`                  | Tolerations for pod assignment.                                                                            | `[]`                               |
 | `affinity`                     | Affinity rules for pod assignment.                                                                         | `{}`                               |
+| `backup.enabled`               | Enable periodic PostgreSQL backups using a CronJob                                                          | `true`                             |
+| `backup.schedule`              | Cron schedule expression for when to run backups                                                           | `"0 0 * * 0"` (Weekly on Sunday)   |
+| `backup.storage`               | Size of the PersistentVolumeClaim used to store backups                                                    | `10Gi`                             |
 
 Refer to the `values.yaml` file for detailed default annotations and structure. For parameters related to the Bitnami PostgreSQL subchart (`postgresql.*`), please consult the official [Bitnami PostgreSQL Helm Chart documentation](https://github.com/bitnami/charts/tree/main/bitnami/postgresql).
 
