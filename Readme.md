@@ -24,6 +24,7 @@ It provides a central admin interface to upload content, organize it into playli
 * **Database Backend:** Utilizes PostgreSQL for storing application data.
 * **Helm Deployment:** Includes a Helm chart for simplified deployment on Kubernetes.
 * **Video Caching:** Nginx Ingress configuration snippet included for long-term caching of video assets.
+* **SSO:** Login and manage users and groups using an OIDC provider. See 
 
 # Getting Started
 For detailed documentation for both administrators and end users, please visit [Kioskmanager Documentation](https://mbcom.github.io/kioskmanager/).

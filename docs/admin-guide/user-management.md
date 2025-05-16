@@ -33,15 +33,15 @@ If not already set up by the system's startup script, you may need to create or 
 2.  **Add/Verify Group:**
     * Click "Add group" if it doesn't exist. Name it exactly `Content Managers`.
     * Select the necessary permissions from the "Available permissions" list and move them to the "Chosen permissions" box. Key permissions often include:
-        * `player | content item | Can add content item`
-        * `player | content item | Can change content item`
-        * `player | content item | Can view content item`
-        * `player | display group | Can view display group`
-        * `player | display group | Can change display group` (This allows them to edit playlist entries for groups they manage)
-        * `player | playlist entry | Can add playlist entry`
-        * `player | playlist entry | Can change playlist entry`
-        * `player | playlist entry | Can delete playlist entry`
-        * `player | playlist entry | Can view playlist entry`
+        * `kioskmanager | content item | Can add content item`
+        * `kioskmanager | content item | Can change content item`
+        * `kioskmanager | content item | Can view content item`
+        * `kioskmanager | display group | Can view display group`
+        * `kioskmanager | display group | Can change display group` (This allows them to edit playlist entries for groups they manage)
+        * `kioskmanager | playlist entry | Can add playlist entry`
+        * `kioskmanager | playlist entry | Can change playlist entry`
+        * `kioskmanager | playlist entry | Can delete playlist entry`
+        * `kioskmanager | playlist entry | Can view playlist entry`
     * Click "Save".
 
 ## Assigning Users to Roles
@@ -54,7 +54,7 @@ If not already set up by the system's startup script, you may need to create or 
 
 2.  **Assign Management of Specific Display Groups:**
     Even if a user is a Content Manager, they need explicit permission to manage the playlist of specific Display Groups.
-    * Navigate to the "Display groups" list (e.g., under "PLAYER").
+    * Navigate to the "Display groups" list.
     * Click on the name of the Display Group you want this user to manage.
     * On the "Change display group" page, find the "Managers" field (it's a many-to-many field for users).
     * Select the user(s) from the "Available users" list and move them to the "Chosen users" box for this group.

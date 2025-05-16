@@ -21,7 +21,7 @@ OIDC allows users to log in using an external Identity Provider (IdP) like Keycl
 
 **Login Flow:**
 1.  User navigates to the admin login page.
-2.  If OIDC is enabled, a button like "Login with <OIDC Provider Name>" will be visible.
+2.  If OIDC is enabled, a button like "Login with -OIDC Provider Name-" will be visible.
 3.  Clicking this button redirects the user to your IdP's login page.
 4.  User authenticates with the IdP.
 5.  IdP redirects the user back to Kioskmanager.
@@ -67,7 +67,7 @@ To enable OIDC, set `auth.method: "oidc"` in your Helm values and configure the 
 **Important Notes for OIDC Setup:**
 
 * **Redirect URIs in IdP:** When registering Kioskmanager as an OIDC client in your IdP, you must provide a Redirect URI. This will typically be `http(s)://<your-kioskmanager-ingress-host>/oidc/callback/`.
-* **Django Groups:** For group mapping to be effective, ensure the group names provided by your OIDC provider in the specified claim match the names of Groups you have configured in Django (e.g., "Content Managers"). You can let Kioskmanager create them if `oidc.rpCreateNewGroups` is true, but then you'll need to assign permissions to these newly created Django groups.
+* **Django Groups:** For group mapping to be effective, ensure the group names provided by your OIDC provider in the specified claim match the names of Groups you have configured in Django (e.g., "Content Managers"). You can let Kioskmanager create them if `oidc.rpDjangoGroupsSyncEnabled` is true, but then you'll need to assign permissions to these newly created Django groups.
 * **Debugging:** `mozilla-django-oidc` provides logging. Increase Django's log level for `mozilla_django_oidc` to DEBUG in your `settings.py` if you encounter issues.
 
 Refer to the Helm chart's `values.yaml` for the exact parameter names and default values.
