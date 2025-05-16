@@ -57,17 +57,8 @@ To enable OIDC, set `auth.method: "oidc"` in your Helm values and configure the 
 * **Group Mapping:**
     Allows Kioskmanager to automatically assign users to Django groups based on a claim from the OIDC token.
     * `oidc.groupsClaimName`: The name of the claim in the OIDC token that contains a list of group/role names (e.g., `groups`, `roles`). If empty, OIDC group sync is disabled.
-    * `oidc.rpDjangoGroupsSyncEnabled`: Set to `true` to enable the sync.
-    * `oidc.rpCreateNewGroups`: If `true`, Django groups listed in the OIDC claim will be automatically created in Django if they don't already exist. Otherwise, the user will only be added to pre-existing Django groups.
-        * *Example:* If OIDC `groups` claim is `["kiosk-editors", "viewers"]` and `oidc.rpCreateNewGroups: true`, Django groups "kiosk-editors" and "viewers" would be created if they don't exist, and the user added to them. Ensure these Django groups (e.g., "Content Managers") are then assigned the correct Kioskmanager permissions.
-
-* **Staff/Superuser Status Mapping (Optional):**
-    You can automatically grant Django `is_staff` (can access admin) or `is_superuser` status based on OIDC claims.
-    * `oidc.mapStaffStatus.enabled`: Set to `true` to enable.
-    * `oidc.mapStaffStatus.claimName`: The OIDC claim containing role information (e.g., `roles`).
-    * `oidc.mapStaffStatus.claimValue`: If this value is present in the `claimName` list (or if the claim itself equals this value), the user gets `is_staff=true`.
-    * Similar settings exist for `oidc.mapSuperuserStatus`.
-    * *Caution:* Granting superuser status automatically should be done with extreme care. It's often safer to grant staff status and then promote to superuser manually within Django if needed.
+    * `oidc.rpDjangoGroupsSyncEnabled`: Set to `true` to enable the sync of groups into Kioskmanager. The `groups` claim should contain a list of group names a user belongs to.
+    * `oidc.assignContentManager`: If `true`, all users will be added to predefined `Content Managers` group.
 
 * **Redirect URLs:**
     * `oidc.loginRedirectUrl`: Where to redirect after a successful OIDC login (default `/admin/`).

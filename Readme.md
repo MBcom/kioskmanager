@@ -160,10 +160,7 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | `oidc.claimEmail`                       | OIDC claim for user's email.                                                                                     | `email`                            |
 | `oidc.groupsClaimName`                  | OIDC claim containing a list of user's groups/roles (e.g., `groups`). Leave empty to disable OIDC group sync.    | `groups`                           |
 | `oidc.rpDjangoGroupsSyncEnabled`        | Enable syncing groups from OIDC claim to Django groups.                                                          | `true`                             |
-| `oidc.rpCreateNewGroups`                | If true, Django groups from OIDC claim are auto-created if they don't exist.                                     | `false`                            |
-| `oidc.mapStaffStatus.enabled`           | Enable mapping a claim to Django `is_staff` status.                                                              | `false`                            |
-| `oidc.mapStaffStatus.claimName`         | OIDC claim name used for staff status mapping (e.g., `roles`).                                                     | `roles`                            |
-| `oidc.mapStaffStatus.claimValue`        | Value in the staff claim that grants `is_staff=true`.                                                            | `kiosk_manager`                    |
+| `oidc.assignContentManager`                | If true, all users which login through oidc will be added to predefined `Content Manager` group.                                     | `false`                            |
 | `oidc.mapSuperuserStatus.enabled`       | Enable mapping a claim to Django `is_superuser` status.                                                          | `false`                            |
 | `oidc.mapSuperuserStatus.claimName`     | OIDC claim name used for superuser status mapping.                                                               | `roles`                            |
 | `oidc.mapSuperuserStatus.claimValue`    | Value in the superuser claim that grants `is_superuser=true`.                                                    | `kiosk_admin`                      |

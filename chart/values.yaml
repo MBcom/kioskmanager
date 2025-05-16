@@ -139,16 +139,12 @@ oidc:
 
   # Group Mapping
   groupsClaimName: "groups" # Name of the OIDC claim containing a list of user's groups/roles
-  rpDjangoGroupsSyncEnabled: true # Enable syncing OIDC groups to Django groups
-  rpCreateNewGroups: false # If true, Django groups mentioned in OIDC claim will be auto-created if they don't exist
+  rpDjangoGroupsSyncEnabled: false # Enable syncing OIDC groups to Django groups
+  assignContentManager: true # If true, all users are assigned to the "Content Manager" group in Django. Set to false if you want to manage group assignments manually.
 
   # Staff / Superuser Status Mapping from Claims
   # Define a claim and a specific value within that claim that grants the status.
   # Useful if the claim is a list of roles.
-  mapStaffStatus:
-    enabled: false
-    claimName: "roles" # e.g., 'roles', 'entitlements'
-    claimValue: "kiosk_manager" # If this value is in the claimName list, user becomes staff
   mapSuperuserStatus:
     enabled: false
     claimName: "roles"

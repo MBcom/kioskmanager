@@ -49,14 +49,9 @@ data:
   OIDC_USERNAME_CLAIM: {{ .Values.oidc.usernameClaim | quote }}
   OIDC_CLAIM_FIRST_NAME: {{ .Values.oidc.claimFirstName | quote }}
   OIDC_CLAIM_LAST_NAME: {{ .Values.oidc.claimLastName | quote }}
-  OIDC_CLAIM_EMAIL: {{ .Values.oidc.claimEmail | quote }}
   OIDC_GROUPS_CLAIM_NAME: {{ .Values.oidc.groupsClaimName | quote }}
   OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED: {{ .Values.oidc.rpDjangoGroupsSyncEnabled | quote }}
-  OIDC_RP_CREATE_NEW_GROUPS: {{ .Values.oidc.rpCreateNewGroups | quote }}
-  {{- if .Values.oidc.mapStaffStatus.enabled }}
-  OIDC_STAFF_CLAIM_NAME: {{ .Values.oidc.mapStaffStatus.claimName | quote }}
-  OIDC_STAFF_CLAIM_VALUE: {{ .Values.oidc.mapStaffStatus.claimValue | quote }}
-  {{- end }}
+  OIDC_ASSIGN_CONTENT_MANAGER: {{ .Values.oidc.assignContentManager | quote }}
   {{- if .Values.oidc.mapSuperuserStatus.enabled }}
   OIDC_SUPERUSER_CLAIM_NAME: {{ .Values.oidc.mapSuperuserStatus.claimName | quote }}
   OIDC_SUPERUSER_CLAIM_VALUE: {{ .Values.oidc.mapSuperuserStatus.claimValue | quote }}

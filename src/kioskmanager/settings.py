@@ -66,7 +66,7 @@ ROOT_URLCONF = 'kioskmanager.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'kioskmanager.context_processors.oidc_settings_processor',
             ],
         },
     },
@@ -179,7 +180,7 @@ OIDC_ENABLED = (AUTH_METHOD == 'oidc')
 if OIDC_ENABLED:
     logger.info("OIDC Authentication is ENABLED.")
     INSTALLED_APPS.append('mozilla_django_oidc')
-    AUTHENTICATION_BACKENDS.insert(0, 'mozilla_django_oidc.auth.OIDCAuthenticationBackend') # Try OIDC first
+    AUTHENTICATION_BACKENDS.insert(0, 'kioskmanager.oidc_backend.OIDCBackend') # Try OIDC first
 
     # --- Required OIDC Settings (from environment variables) ---
     OIDC_RP_CLIENT_ID = os.environ.get('OIDC_RP_CLIENT_ID')
@@ -219,58 +220,23 @@ if OIDC_ENABLED:
     # You MUST ensure the chosen claim is unique and suitable as a username.
     # A common choice is 'email' if emails are unique in your IdP.
     OIDC_USERNAME_CLAIM = os.environ.get('OIDC_USERNAME_CLAIM', 'email')
-    def generate_username_from_claim(claims):
-        username_claim = OIDC_USERNAME_CLAIM
-        username = claims.get(username_claim)
-        if not username:
-            logger.error(f"OIDC username claim '{username_claim}' not found in claims: {claims}")
-            # Fallback to 'sub' if preferred claim is missing, to ensure user creation doesn't fail
-            username = claims.get('sub')
-        return username
+    def generate_username_from_claim(email):
+        return email
     OIDC_USERNAME_ALGO = generate_username_from_claim
 
 
-    OIDC_CLAIM_MAPPING = {
-        "first_name": os.environ.get("OIDC_CLAIM_FIRST_NAME", "given_name"),
-        "last_name": os.environ.get("OIDC_CLAIM_LAST_NAME", "family_name"),
-        "email": os.environ.get("OIDC_CLAIM_EMAIL", "email"),
-    }
+    OIDC_CLAIM_FIRST_NAME = os.environ.get("OIDC_CLAIM_FIRST_NAME", "given_name")
+    OIDC_CLAIM_LAST_NAME = os.environ.get("OIDC_CLAIM_LAST_NAME", "family_name")
 
     # --- Group Mapping from OIDC Claim ---
     OIDC_GROUPS_CLAIM_NAME = os.environ.get('OIDC_GROUPS_CLAIM_NAME') # e.g., "groups" or "roles"
     if OIDC_GROUPS_CLAIM_NAME:
         OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED = os.environ.get('OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED', 'True').lower() == 'true'
-        OIDC_RP_DJANGO_GROUPS_SYNC_CLAIM = OIDC_GROUPS_CLAIM_NAME
-        OIDC_RP_CREATE_NEW_GROUPS = os.environ.get('OIDC_RP_CREATE_NEW_GROUPS', 'False').lower() == 'true'
-        logger.info(f"OIDC Group Sync ENABLED. Claim: '{OIDC_GROUPS_CLAIM_NAME}', Create Missing: {OIDC_RP_CREATE_NEW_GROUPS}")
     else:
         OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED = False
         logger.info("OIDC Group Sync DISABLED (OIDC_GROUPS_CLAIM_NAME not set).")
 
-    # --- Staff/Superuser Status Mapping from OIDC Claim ---
-    # Example: if OIDC claim 'kiosk_roles' contains 'admin', make user staff.
-    OIDC_STAFF_CLAIM_NAME = os.environ.get('OIDC_STAFF_CLAIM_NAME') # e.g., "kiosk_roles"
-    OIDC_STAFF_CLAIM_VALUE = os.environ.get('OIDC_STAFF_CLAIM_VALUE') # e.g., "platform_admin" or "kiosk_manager"
-    if OIDC_STAFF_CLAIM_NAME and OIDC_STAFF_CLAIM_VALUE:
-        def user_is_staff(claims):
-            claim_values = claims.get(OIDC_STAFF_CLAIM_NAME, [])
-            if isinstance(claim_values, list):
-                return OIDC_STAFF_CLAIM_VALUE in claim_values
-            return claim_values == OIDC_STAFF_CLAIM_VALUE
-        OIDC_USER_IS_STAFF_FUNCTION = user_is_staff
-        logger.info(f"OIDC Staff status mapping ENABLED. Claim: '{OIDC_STAFF_CLAIM_NAME}', Value for True: '{OIDC_STAFF_CLAIM_VALUE}'.")
-
-    OIDC_SUPERUSER_CLAIM_NAME = os.environ.get('OIDC_SUPERUSER_CLAIM_NAME')
-    OIDC_SUPERUSER_CLAIM_VALUE = os.environ.get('OIDC_SUPERUSER_CLAIM_VALUE')
-    if OIDC_SUPERUSER_CLAIM_NAME and OIDC_SUPERUSER_CLAIM_VALUE:
-        def user_is_superuser(claims):
-            claim_values = claims.get(OIDC_SUPERUSER_CLAIM_NAME, [])
-            if isinstance(claim_values, list):
-                return OIDC_SUPERUSER_CLAIM_VALUE in claim_values
-            return claim_values == OIDC_SUPERUSER_CLAIM_VALUE
-        OIDC_USER_IS_SUPERUSER_FUNCTION = user_is_superuser
-        logger.info(f"OIDC Superuser status mapping ENABLED. Claim: '{OIDC_SUPERUSER_CLAIM_NAME}', Value for True: '{OIDC_SUPERUSER_CLAIM_VALUE}'.")
-
+    OIDC_ASSIGN_CONTENT_MANAGER = os.environ.get('OIDC_ASSIGN_CONTENT_MANAGER', 'True').lower() == 'true'
 
     # --- Redirect URLs ---
     # LOGIN_URL = 'oidc_authentication_init' # Can cause redirect loops if not careful
@@ -278,7 +244,7 @@ if OIDC_ENABLED:
     LOGOUT_REDIRECT_URL = os.environ.get('LOGOUT_REDIRECT_URL', '/')
 
     # Nonce/State storage - Ensure sessions are working correctly.
-    OIDC_STORE_ID_TOKEN = True # Useful for debugging, can be False in production if not needed
+    OIDC_STORE_ID_TOKEN = False # Useful for debugging, can be False in production if not needed
     OIDC_STATE_SIZE = int(os.environ.get('OIDC_STATE_SIZE', '32'))
     OIDC_NONCE_SIZE = int(os.environ.get('OIDC_NONCE_SIZE', '32'))
 
@@ -290,8 +256,3 @@ if OIDC_ENABLED:
 
 else:
     logger.info("OIDC Authentication is DISABLED. Using standard Django authentication.")
-
-TEMPLATES[0]['OPTIONS']['context_processors'].extend([
-    # ... other context processors
-    'player.context_processors.oidc_settings_processor', # Add this
-])
