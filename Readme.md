@@ -83,6 +83,15 @@ For deployment instructions, you can follow the steps outlined in this README.
     kubectl logs deployment/<release-name>-kioskmanager -n <your-namespace> # Check application logs
     ```
 
+## Authentication
+
+Kioskmanager supports two authentication methods for accessing the admin portal, configurable via the Helm chart (`auth.method`):
+
+1.  **Standard Django Login:** Uses Django's built-in username and password authentication.
+2.  **OpenID Connect (OIDC):** Allows integration with an external Identity Provider (IdP). When enabled, users can log in via the IdP, and their Django user accounts can be automatically created and updated based on OIDC claims, including group memberships.
+
+Refer to the Admin Guide's authentication section and the Helm chart values for detailed OIDC configuration.
+
 ## Configuration Values
 
 The following table lists the configurable parameters of the Kioskmanager Helm chart and their default values.
@@ -131,6 +140,38 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | `nodeSelector`                 | Node selector constraints for pod assignment.                                                              | `{}`                               |
 | `tolerations`                  | Tolerations for pod assignment.                                                                            | `[]`                               |
 | `affinity`                     | Affinity rules for pod assignment.                                                                         | `{}`                               |
+| `auth.method`                           | Authentication method: `standard` (Django default) or `oidc` (OpenID Connect).                                   | `standard`                         |
+| `oidc.opBaseDiscoveryUrl`               | URL to OIDC provider's `.well-known/openid-configuration` for auto-discovery of endpoints.                       | `""`                               |
+| `oidc.opAuthorizationEndpoint`          | OIDC Authorization Endpoint URL (if `opBaseDiscoveryUrl` not used).                                                | `""`                               |
+| `oidc.opTokenEndpoint`                  | OIDC Token Endpoint URL (if `opBaseDiscoveryUrl` not used).                                                        | `""`                               |
+| `oidc.opUserEndpoint`                   | OIDC UserInfo Endpoint URL (if `opBaseDiscoveryUrl` not used).                                                     | `""`                               |
+| `oidc.opJwksEndpoint`                   | OIDC JWKS URI for token signature verification (if `opBaseDiscoveryUrl` not used).                                 | `""`                               |
+| `oidc.opIssuerEndpoint`                 | OIDC Issuer URL (optional, sometimes needed for validation).                                                       | `""`                               |
+| `oidc.rpClientId`                       | **Required if `auth.method=oidc`**. Client ID for Kioskmanager registered with the OIDC provider.                  | `""`                               |
+| `oidc.rpClientSecret`                   | **Required if `auth.method=oidc`**. Client Secret. **Set via `--set` or a secure values file.** | `""`                               |
+| `oidc.rpSignAlgo`                       | Algorithm used by OIDC provider to sign ID tokens (e.g., `RS256`).                                                 | `RS256`                            |
+| `oidc.rpScopes`                         | Scopes to request (e.g., `openid email profile groups`).                                                         | `openid email profile groups`      |
+| `oidc.providerName`                     | Name displayed on the OIDC login button (e.g., "Corporate SSO").                                                   | `Corporate SSO`                    |
+| `oidc.createUser`                       | Allow creation of new Django users for authenticated OIDC users.                                                 | `true`                             |
+| `oidc.updateUserAttributes`             | Update user attributes (email, name) from OIDC claims on each login.                                             | `true`                             |
+| `oidc.usernameClaim`                    | OIDC claim used for Django username (e.g., `email`, `preferred_username`, `sub`). Must be unique.                | `email`                            |
+| `oidc.claimFirstName`                   | OIDC claim for user's first name.                                                                                | `given_name`                       |
+| `oidc.claimLastName`                    | OIDC claim for user's last name.                                                                                 | `family_name`                      |
+| `oidc.claimEmail`                       | OIDC claim for user's email.                                                                                     | `email`                            |
+| `oidc.groupsClaimName`                  | OIDC claim containing a list of user's groups/roles (e.g., `groups`). Leave empty to disable OIDC group sync.    | `groups`                           |
+| `oidc.rpDjangoGroupsSyncEnabled`        | Enable syncing groups from OIDC claim to Django groups.                                                          | `true`                             |
+| `oidc.assignContentManager`                | If true, all users which login through oidc will be added to predefined `Content Manager` group.                                     | `false`                            |
+| `oidc.mapSuperuserStatus.enabled`       | Enable mapping a claim to Django `is_superuser` status.                                                          | `false`                            |
+| `oidc.mapSuperuserStatus.claimName`     | OIDC claim name used for superuser status mapping.                                                               | `roles`                            |
+| `oidc.mapSuperuserStatus.claimValue`    | Value in the superuser claim that grants `is_superuser=true`.                                                    | `kiosk_admin`                      |
+| `oidc.loginRedirectUrl`                 | Django URL to redirect to after successful OIDC login.                                                           | `/admin/`                          |
+| `oidc.logoutRedirectUrl`                | Django URL to redirect to after OIDC initiated logout (if supported by IdP and library).                         | `/`                                |
+| `oidc.stateSize`                        | Size of the OIDC 'state' parameter.                                                                              | `32`                               |
+| `oidc.nonceSize`                        | Size of the OIDC 'nonce' parameter.
+
+Refer to the `values.yaml` file for detailed default annotations and structure. For parameters related to the Bitnami PostgreSQL subchart (`postgresql.*`), please consult the official [Bitnami PostgreSQL Helm Chart documentation](https://github.com/bitnami/charts/tree/main/bitnami/postgresql).
+
+
 | `backup.enabled`               | Enable periodic PostgreSQL backups using a CronJob                                                          | `true`                             |
 | `backup.schedule`              | Cron schedule expression for when to run backups                                                           | `"0 0 * * 0"` (Weekly on Sunday)   |
 | `backup.storage`               | Size of the PersistentVolumeClaim used to store backups                                                    | `10Gi`                             |

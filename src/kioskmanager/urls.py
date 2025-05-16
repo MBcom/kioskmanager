@@ -34,6 +34,11 @@ urlpatterns = [
     path('favicon.ico', lambda _ : redirect('static/img/kioskmanager.ico', permanent=True)),
     path("i18n/", include("django.conf.urls.i18n")),
     path('healthz/', include('health_check.urls')),
-] + i18n_patterns(
+]
+
+if settings.OIDC_ENABLED:
+    urlpatterns.append(path('oidc/', include('mozilla_django_oidc.urls')))
+
+urlpatterns += i18n_patterns(
         path("admin/", admin.site.urls),
     ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

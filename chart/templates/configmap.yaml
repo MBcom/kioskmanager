@@ -29,3 +29,37 @@ data:
   DATABASE_NAME: {{ required "External DB name required if postgresql.enabled=false (.Values.externalDatabase.database)" .Values.externalDatabase.database | quote }}
   DATABASE_USER: {{ required "External DB user required if postgresql.enabled=false (.Values.externalDatabase.username)" .Values.externalDatabase.username | quote }}
   {{- end }}
+  DJANGO_AUTH_METHOD: {{ .Values.auth.method | quote }}
+
+  {{- if eq .Values.auth.method "oidc" }}
+  # OIDC Configuration
+  OIDC_ENABLED: "True" # Helper for Django settings logic, though derived from AUTH_METHOD
+  OIDC_PROVIDER_NAME: {{ .Values.oidc.providerName | quote }}
+  OIDC_RP_CLIENT_ID: {{ .Values.oidc.rpClientId | quote }}
+  OIDC_OP_BASE_DISCOVERY_URL: {{ .Values.oidc.opBaseDiscoveryUrl | quote }}
+  OIDC_OP_AUTHORIZATION_ENDPOINT: {{ .Values.oidc.opAuthorizationEndpoint | quote }}
+  OIDC_OP_TOKEN_ENDPOINT: {{ .Values.oidc.opTokenEndpoint | quote }}
+  OIDC_OP_USER_ENDPOINT: {{ .Values.oidc.opUserEndpoint | quote }}
+  OIDC_OP_JWKS_ENDPOINT: {{ .Values.oidc.opJwksEndpoint | quote }}
+  OIDC_OP_ISSUER_ENDPOINT: {{ .Values.oidc.opIssuerEndpoint | quote }}
+  OIDC_RP_SIGN_ALGO: {{ .Values.oidc.rpSignAlgo | quote }}
+  OIDC_RP_SCOPES: {{ .Values.oidc.rpScopes | quote }}
+  OIDC_CREATE_USER: {{ .Values.oidc.createUser | quote }}
+  OIDC_UPDATE_USER_ATTRIBUTES: {{ .Values.oidc.updateUserAttributes | quote }}
+  OIDC_USERNAME_CLAIM: {{ .Values.oidc.usernameClaim | quote }}
+  OIDC_CLAIM_FIRST_NAME: {{ .Values.oidc.claimFirstName | quote }}
+  OIDC_CLAIM_LAST_NAME: {{ .Values.oidc.claimLastName | quote }}
+  OIDC_GROUPS_CLAIM_NAME: {{ .Values.oidc.groupsClaimName | quote }}
+  OIDC_RP_DJANGO_GROUPS_SYNC_ENABLED: {{ .Values.oidc.rpDjangoGroupsSyncEnabled | quote }}
+  OIDC_ASSIGN_CONTENT_MANAGER: {{ .Values.oidc.assignContentManager | quote }}
+  {{- if .Values.oidc.mapSuperuserStatus.enabled }}
+  OIDC_SUPERUSER_CLAIM_NAME: {{ .Values.oidc.mapSuperuserStatus.claimName | quote }}
+  OIDC_SUPERUSER_CLAIM_VALUE: {{ .Values.oidc.mapSuperuserStatus.claimValue | quote }}
+  {{- end }}
+  LOGIN_REDIRECT_URL: {{ .Values.oidc.loginRedirectUrl | quote }}
+  LOGOUT_REDIRECT_URL: {{ .Values.oidc.logoutRedirectUrl | quote }}
+  OIDC_STATE_SIZE: {{ .Values.oidc.stateSize | quote }}
+  OIDC_NONCE_SIZE: {{ .Values.oidc.nonceSize | quote }}
+  {{- else }}
+  OIDC_ENABLED: "False"
+  {{- end }}

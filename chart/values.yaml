@@ -100,3 +100,60 @@ resources:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+# Authentication Method Configuration
+auth:
+  # Method can be 'standard' or 'oidc'.
+  # If 'oidc', ensure the 'oidc' section below is fully configured.
+  method: "standard"
+
+# OpenID Connect (OIDC) Configuration
+# These values are used only if auth.method is 'oidc'.
+oidc:
+  # If using IdP's .well-known/openid-configuration for auto-discovery
+  # e.g., "https://idp.example.com/auth/realms/myrealm"
+  # If set, explicit op*Endpoint settings below might be overridden or not needed.
+  opBaseDiscoveryUrl: ""
+
+  # Explicit OIDC Provider Endpoints (required if opBaseDiscoveryUrl is not set or insufficient)
+  opAuthorizationEndpoint: "" # e.g., "https://idp.example.com/auth/realms/myrealm/protocol/openid-connect/auth"
+  opTokenEndpoint: ""         # e.g., "https://idp.example.com/auth/realms/myrealm/protocol/openid-connect/token"
+  opUserEndpoint: ""          # e.g., "https://idp.example.com/auth/realms/myrealm/protocol/openid-connect/userinfo"
+  opJwksEndpoint: ""          # e.g., "https://idp.example.com/auth/realms/myrealm/protocol/openid-connect/certs"
+  opIssuerEndpoint: ""        # Optional but often useful for validation if discovery is not used, e.g., "https://idp.example.com/auth/realms/myrealm"
+
+  # Relying Party (Kioskmanager) Client Configuration
+  rpClientId: "" # REQUIRED if OIDC enabled: Your client ID from the OIDC provider
+  # rpClientSecret: "" # REQUIRED if OIDC enabled: Set via --set or dedicated k8s secret, not directly in values.yaml
+  rpSignAlgo: "RS256" # Algorithm used to sign ID tokens (e.g., RS256, HS256)
+  rpScopes: "openid email profile groups" # Scopes to request from OIDC provider (add your groups scope if different)
+  providerName: "Corporate SSO" # Name displayed on the OIDC login button
+
+  # User Creation and Attribute Mapping (from OIDC claims to Django User model)
+  createUser: true # Whether to create new Django users for authenticated OIDC users
+  updateUserAttributes: true # Whether to update user attributes (email, name) on each login
+  usernameClaim: "email" # OIDC claim to use for Django username (e.g., "email", "preferred_username", "sub"). MUST be unique.
+  claimFirstName: "given_name" # OIDC claim for user's first name
+  claimLastName: "family_name" # OIDC claim for user's last name
+  claimEmail: "email"          # OIDC claim for user's email
+
+  # Group Mapping
+  groupsClaimName: "groups" # Name of the OIDC claim containing a list of user's groups/roles
+  rpDjangoGroupsSyncEnabled: false # Enable syncing OIDC groups to Django groups
+  assignContentManager: true # If true, all users are assigned to the "Content Manager" group in Django. Set to false if you want to manage group assignments manually.
+
+  # Staff / Superuser Status Mapping from Claims
+  # Define a claim and a specific value within that claim that grants the status.
+  # Useful if the claim is a list of roles.
+  mapSuperuserStatus:
+    enabled: false
+    claimName: "roles"
+    claimValue: "kiosk_admin"
+
+  # Django Redirect URLs after OIDC login/logout
+  loginRedirectUrl: "/admin/"
+  logoutRedirectUrl: "/"
+
+  # Advanced: Nonce/State size for security
+  stateSize: 32
+  nonceSize: 32
