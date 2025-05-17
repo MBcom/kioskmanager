@@ -125,7 +125,7 @@ jobs:
         run: |
           echo "Creating GitHub Release ${NEW_TAG} for commit ${TARGET_COMMITISH}..."
           gh release create "$NEW_TAG" \
-            --commit "$TARGET_COMMITISH" \
+            --target "$TARGET_COMMITISH" \
             --title "$RELEASE_TITLE" \
             --notes "$RELEASE_NOTES"
           echo "Release ${NEW_TAG} created successfully."
