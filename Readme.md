@@ -26,6 +26,8 @@ It provides a central admin interface to upload content, organize it into playli
 * **Video Caching:** Nginx Ingress configuration snippet included for long-term caching of video assets.
 * **SSO:** Login and manage users and groups using an OIDC provider. See 
 
+![Kiosk Manager promotion example](./docs/signage_example.gif)
+
 # Getting Started
 For detailed documentation for both administrators and end users, please visit [Kioskmanager Documentation](https://mbcom.github.io/kioskmanager/).
 
@@ -142,17 +144,18 @@ The following table lists the configurable parameters of the Kioskmanager Helm c
 | `tolerations`                  | Tolerations for pod assignment.                                                                            | `[]`                               |
 | `affinity`                     | Affinity rules for pod assignment.                                                                         | `{}`                               |
 | `auth.method`                           | Authentication method: `standard` (Django default) or `oidc` (OpenID Connect).                                   | `standard`                         |
+| `oidc.rpClientId`                       | **Required if `auth.method=oidc`**. Client ID for Kioskmanager registered with the OIDC provider.                  | `""`                               |
+| `oidc.rpClientSecret`                   | **Required if `auth.method=oidc`**. Client Secret. **Set via `--set` or a secure values file.** | `""`                               |
+| `oidc.opBaseDiscoveryUrl`               | URL to OIDC provider's `.well-known/openid-configuration` for auto-discovery of endpoints. E.g. `https://idp.example.com/auth/realms/myrealm`                      | `""`                               |
 | `oidc.opBaseDiscoveryUrl`               | URL to OIDC provider's `.well-known/openid-configuration` for auto-discovery of endpoints.                       | `""`                               |
 | `oidc.opAuthorizationEndpoint`          | OIDC Authorization Endpoint URL (if `opBaseDiscoveryUrl` not used).                                                | `""`                               |
 | `oidc.opTokenEndpoint`                  | OIDC Token Endpoint URL (if `opBaseDiscoveryUrl` not used).                                                        | `""`                               |
 | `oidc.opUserEndpoint`                   | OIDC UserInfo Endpoint URL (if `opBaseDiscoveryUrl` not used).                                                     | `""`                               |
 | `oidc.opJwksEndpoint`                   | OIDC JWKS URI for token signature verification (if `opBaseDiscoveryUrl` not used).                                 | `""`                               |
-| `oidc.opIssuerEndpoint`                 | OIDC Issuer URL (optional, sometimes needed for validation).                                                       | `""`                               |
-| `oidc.rpClientId`                       | **Required if `auth.method=oidc`**. Client ID for Kioskmanager registered with the OIDC provider.                  | `""`                               |
-| `oidc.rpClientSecret`                   | **Required if `auth.method=oidc`**. Client Secret. **Set via `--set` or a secure values file.** | `""`                               |
+| `oidc.opIssuerEndpoint`                 | OIDC Issuer URL (optional, sometimes needed for validation).    (if `opBaseDiscoveryUrl` not used).                                                   | `""`                               |
 | `oidc.rpSignAlgo`                       | Algorithm used by OIDC provider to sign ID tokens (e.g., `RS256`).                                                 | `RS256`                            |
 | `oidc.rpScopes`                         | Scopes to request (e.g., `openid email profile groups`).                                                         | `openid email profile groups`      |
-| `oidc.providerName`                     | Name displayed on the OIDC login button (e.g., "Corporate SSO").                                                   | `Corporate SSO`                    |
+| `oidc.providerName`                     | Name displayed on the OIDC login button (e.g., "Corporate SSO").                                                   | `SSO`                    |
 | `oidc.createUser`                       | Allow creation of new Django users for authenticated OIDC users.                                                 | `true`                             |
 | `oidc.updateUserAttributes`             | Update user attributes (email, name) from OIDC claims on each login.                                             | `true`                             |
 | `oidc.usernameClaim`                    | OIDC claim used for Django username (e.g., `email`, `preferred_username`, `sub`). Must be unique.                | `email`                            |

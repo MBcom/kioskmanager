@@ -7,6 +7,6 @@ This guide will walk you through the common tasks for managing the content that 
 ## Topics
 
 * **[Managing Content Items](./managing-content-items.md):** How to add new videos and website links to the Kioskmanager library.
-* **[Creating Playlists & Managing Groups](./creating-playlists.md):** How to create Display Groups and assign an ordered sequence of content items (videos/websites) to them.
+* **[Assign your content to screens](./creating-playlists.md):** How to display your content on a group of screens (e.g. in your entrance hall).
 
 To begin, ensure you can [Access the Admin Panel](../getting-started.md).

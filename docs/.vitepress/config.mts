@@ -32,7 +32,7 @@ export default defineConfig({
           items: [
             { text: 'Overview', link: '/content-manager-guide/' }, // content-manager-guide/index.md
             { text: 'Managing Content Items', link: '/content-manager-guide/managing-content-items' },
-            { text: 'Creating Playlists & Groups', link: '/content-manager-guide/creating-playlists' }
+            { text: 'Display content on screens', link: '/content-manager-guide/creating-playlists' }
           ]
       },
       {
@@ -43,6 +43,7 @@ export default defineConfig({
             { text: 'Installation (Helm)', link: '/admin-guide/installation' },
             { text: 'Authentication', link: '/admin-guide/authentication' },
             { text: 'Connecting & Managing Displays', link: '/admin-guide/connecting-displays' },
+            { text: 'Manage Display Groups', link: '/admin-guide/create-display-groups' },
             { text: 'User Management', link: '/admin-guide/user-management' },
             { text: 'Setting Up a Kiosk Device', link: '/admin-guide/kiosk-device-example.md' },
             { text: 'Backup and Restore', link: '/admin-guide/backup-restore.md' }
