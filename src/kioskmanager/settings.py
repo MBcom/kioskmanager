@@ -33,6 +33,15 @@ ALLOWED_HOSTS = [os.getenv('DJANGO_ALLOWED_HOSTS', '*')]
 
 CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000')]
 
+if not DEBUG:
+  SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Use X-Forwarded-Host header if available
+USE_X_FORWARDED_HOST = True
+
+# If you're behind a reverse proxy that sets X-Forwarded-Port
+USE_X_FORWARDED_PORT = True
+
 
 # Application definition
 
