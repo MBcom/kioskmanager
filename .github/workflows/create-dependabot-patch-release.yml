@@ -1,0 +1,131 @@
+name: Create Patch Release on Dependabot Merge
+on:
+  pull_request:
+    types: [closed] # Trigger when a pull request is closed
+
+permissions:
+  contents: write      # To create tags and releases
+  pull-requests: read  # To read PR details (changed files, body)
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    # Only run if the PR was merged AND the user who opened the PR was dependabot[bot]
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history for all tags and branches (needed for versioning)
+
+      - name: Get PR metadata (changed files and body)
+        id: pr_metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "Fetching changed files for PR #${PR_NUMBER}..."
+          changed_files=$(gh pr view $PR_NUMBER --json files --jq '.files[].path')
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$changed_files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "Fetching PR body for PR #${PR_NUMBER}..."
+          pr_body=$(gh pr view $PR_NUMBER --json body --jq '.body')
+          echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+          echo "$pr_body" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Check if Dockerfile or src/ files were modified
+        id: check_files
+        env:
+          CHANGED_FILES: ${{ steps.pr_metadata.outputs.changed_files }}
+        run: |
+          echo "Inspecting changed files:"
+          echo "${CHANGED_FILES}"
+          if echo "${CHANGED_FILES}" | grep -q -E "(^Dockerfile$|^src/)"; then
+            echo "Changes detected in Dockerfile or src/ folder. Proceeding with release."
+            echo "create_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes in Dockerfile or src/ folder. Skipping release."
+            echo "create_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Prepare Release Information
+        id: prep_release_info
+        if: steps.check_files.outputs.create_release == 'true'
+        env:
+          PR_BODY: ${{ steps.pr_metadata.outputs.pr_body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          release_title="Patch Release following Dependabot PR #${PR_NUMBER}"
+          
+          release_notes=$(cat <<EOF
+          Automated patch release generated after merging Dependabot PR #${PR_NUMBER}.
+
+          **PR Link:** ${PR_URL}
+
+          **Dependabot Changes:**
+          ---
+          ${PR_BODY}
+          ---
+          EOF
+          )
+          
+          echo "release_title<<EOF" >> $GITHUB_OUTPUT
+          echo "$release_title" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$release_notes" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Determine Next Patch Version
+        id: versioning
+        if: steps.check_files.outputs.create_release == 'true'
+        run: |
+          git fetch --tags # Ensure all tags are fetched
+          # Get the latest tag like vX.Y.Z, sort them by version, and pick the highest.
+          # This filters for tags that look like v Major.Minor.Patch
+          latest_semver_tag=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
+          
+          new_tag="v0.0.1" # Default initial version if no matching tags are found
+
+          if [[ -n "$latest_semver_tag" ]]; then
+            version_core=${latest_semver_tag#v} # Remove 'v' prefix
+            major=$(echo "$version_core" | cut -d. -f1)
+            minor=$(echo "$version_core" | cut -d. -f2)
+            patch_raw=$(echo "$version_core" | cut -d. -f3) # e.g., "3" or "3-beta"
+
+            # Ensure patch_num is purely numeric by taking digits from the start of patch_raw
+            patch_num=$(echo "$patch_raw" | grep -o '^[0-9]\+') 
+
+            if ! [[ "$patch_num" =~ ^[0-9]+$ ]]; then
+              echo "Error: Could not extract a valid patch number from '$patch_raw' (from tag '$latest_semver_tag')."
+              echo "Please ensure your tags follow a vX.Y.Z pattern for automated patch versioning."
+              exit 1
+            fi
+            
+            new_patch=$((patch_num + 1))
+            new_tag="v${major}.${minor}.${new_patch}"
+          fi
+          echo "Calculated new tag: $new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: steps.check_files.outputs.create_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_TAG: ${{ steps.versioning.outputs.new_tag }}
+          RELEASE_TITLE: ${{ steps.prep_release_info.outputs.release_title }}
+          RELEASE_NOTES: ${{ steps.prep_release_info.outputs.release_notes }}
+          TARGET_COMMITISH: ${{ github.event.pull_request.merge_commit_sha }} # Tag the merge commit
+        run: |
+          echo "Creating GitHub Release ${NEW_TAG} for commit ${TARGET_COMMITISH}..."
+          gh release create "$NEW_TAG" \
+            --commit "$TARGET_COMMITISH" \
+            --title "$RELEASE_TITLE" \
+            --notes "$RELEASE_NOTES"
+          echo "Release ${NEW_TAG} created successfully."

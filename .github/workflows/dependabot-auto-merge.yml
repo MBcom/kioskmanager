@@ -1,0 +1,27 @@
+name: Dependabot auto-merge
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    # This condition ensures the workflow only runs for pull requests opened by dependabot[bot]
+    # and specifically for your repository.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'owner/my_repo' # Make sure to replace 'owner/my_repo' with your actual repository
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7 # It's good practice to use a specific commit SHA or tag for actions
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Enable auto-merge for Dependabot PRs for patch and minor updates
+        # This condition now checks if the update type is either a patch or a minor version update.
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
