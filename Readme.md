@@ -186,6 +186,10 @@ Refer to the `values.yaml` file for detailed default annotations and structure. 
 
 To set up the development environment for Kioskmanager, follow these steps:
 
+**Prerequisites:**
+* python3
+* Node.JS 12 or above for using docs
+
 1. **Clone the Repository:**
     ```bash
     git clone https://github.com/mbcom/kioskmanager.git
@@ -197,16 +201,37 @@ To set up the development environment for Kioskmanager, follow these steps:
     ```bash
     export DJANGO_DEBUG=True
     ```
-
-3. **Run the Application Locally:**
-    The application uses SQLite as the default database for local development. Start the Django development server:
+3. **Install dependencies:**
+    Run the following command to install all dependencies:  
     ```bash
-    python manage.py runserver
+    cd src
+    pip install -r requirements.txt
+    ```
+4. **Run migrations and create a superuser account:**
+    Run database migrations to initialize your local sqlite database:  
+    ```bash
+    cd src
+    python3 manage.py migrate
     ```
 
-4. **Serve Documentation Locally:**
+    Create a superadmin user. You need to do that only once:  
+    ```bash
+    cd src
+    python manage.py createsuperuser
+    ```
+
+5. **Run the Application Locally:**
+    The application uses SQLite as the default database for local development. Start the Django development server:
+    ```bash
+    cd src
+    python manage.py runserver
+    ```
+    You can now go to http://127.0.0.1:8000/ and login with credentials created in step 4.
+
+6. **Serve Documentation Locally: (optional)**
     Navigate to the `docs` folder and run the following command to serve the documentation locally:
     ```bash
+    cd docs
     npm run docs:dev
     ```
     The documentation will be available at `http://localhost:8080`.
