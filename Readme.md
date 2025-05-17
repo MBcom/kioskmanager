@@ -187,8 +187,9 @@ Refer to the `values.yaml` file for detailed default annotations and structure. 
 To set up the development environment for Kioskmanager, follow these steps:
 
 **Prerequisites:**
-* python3
+* Python 3
 * Node.JS 12 or above for using docs
+* Git
 
 1. **Clone the Repository:**
     ```bash
@@ -234,6 +235,6 @@ To set up the development environment for Kioskmanager, follow these steps:
     cd docs
     npm run docs:dev
     ```
-    The documentation will be available at `http://localhost:8080`.
+    The documentation will be available at http://localhost:5173/kioskmanager/.
 
 Happy coding!
