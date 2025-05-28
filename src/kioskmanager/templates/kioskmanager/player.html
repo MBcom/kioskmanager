@@ -39,10 +39,59 @@
         }
         #statusOverlay.error { background-color: rgba(200, 0, 0, 0.8); }
         #statusOverlay.loading { background-color: rgba(0, 0, 150, 0.8); }
+        #uuidOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85);
+            z-index: 2001;
+            justify-content: center;
+            align-items: center;
+        }
+        #uuidOverlay.visible {
+            display: flex !important;
+        }
+        #uuidOverlayContent {
+            width: 75vw;
+            background: #fff;
+            color: #222;
+            border-radius: 16px;
+            padding: 2vw;
+            box-shadow: 0 0 32px #000a;
+            text-align: center;
+        }
+        #uuidOverlayContent .uuid-title {
+            font-size: 2vw;
+            margin-bottom: 1vw;
+            color: #888;
+        }
+        #uuidOverlayContent .uuid-label {
+            font-size: 1.2vw;
+            margin-bottom: 1vw;
+        }
+        #uuidOverlayContent .uuid-value {
+            font-size: 3vw;
+            font-family: monospace;
+            color: #ff5252;
+            background: #f8f8f8;
+            border-radius: 8px;
+            padding: 1vw 2vw;
+            letter-spacing: 0.08em;
+            word-break: break-all;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
     <div id="statusOverlay">Loading...</div>
+    <div id="uuidOverlay">
+        <div id="uuidOverlayContent">
+            <div class="uuid-title">No content assigned</div>
+            <div class="uuid-label">Your Display UUID:</div>
+            <div class="uuid-value" id="uuidValue"></div>
+        </div>
+    </div>
 
     <div class="player-container">
         <video id="videoPlayer" controls muted autoplay playsinline>
@@ -146,6 +195,7 @@
         function startPlayback() {
              // Stop any existing playback before starting anew
              clearPreviousPlayback();
+             hideUuidOverlay();
 
              if (playlist.length > 0) {
                  currentItemIndex = -1; // Reset index
@@ -155,9 +205,11 @@
              } else {
                  currentItemIndex = -1;
                  console.log("Playlist is empty.");
-                 showStatus(`No content assigned. Group: ${currentGroupName}. Waiting...`, 'info');
-                 // Optionally fetch again sooner if playlist is empty
-                 // setTimeout(fetchPlaylist, 60000); // e.g., check every minute
+                 if (!currentGroupName || currentGroupName === 'None') {
+                     showUuidOverlay(browserIdentifier);
+                 } else {
+                     showStatus(`No content assigned. Group: ${currentGroupName}. Waiting...`, 'info');
+                 }
              }
         }
 
@@ -253,15 +305,15 @@
                  videoPlayer.pause();
                  console.log("Paused video.");
              }
-            // videoPlayer.style.display = 'none'; // Hide elements in playItem instead
+        }
 
-            // // Hide and clear iframe (crucial for stopping scripts/sound)
-            // websiteFrame.style.display = 'none';
-            // // Setting src to 'about:blank' is generally safer than removeAttribute
-            // if (websiteFrame.src !== 'about:blank') {
-            //      websiteFrame.src = 'about:blank';
-            //      console.log("Cleared iframe source.");
-            // }
+        function showUuidOverlay(uuid) {
+            document.getElementById('uuidValue').textContent = uuid;
+            document.getElementById('uuidOverlay').classList.add('visible');
+        }
+
+        function hideUuidOverlay() {
+            document.getElementById('uuidOverlay').classList.remove('visible');
         }
 
 
@@ -280,24 +332,7 @@
             // Skip to the next item after a brief delay to avoid rapid error loops
             setTimeout(playNextItem, 2000);
         });
-
-        // --- Optional: Iframe Load Listener (Can be unreliable due to cross-origin policies) ---
-        // websiteFrame.addEventListener('load', () => {
-        //     const item = playlist[currentItemIndex];
-        //     if (item && item.type === 'website') {
-        //          console.log(`Iframe loaded: ${item.title}`);
-        //     }
-        // });
-        // websiteFrame.addEventListener('error', (e) => { // Might not fire for all errors (e.g., X-Frame-Options)
-        //      const item = playlist[currentItemIndex];
-        //      console.error(`Iframe error loading index ${currentItemIndex} (${item?.title || 'N/A'}):`, websiteFrame.src, e);
-        //      showStatus(`Iframe load error for ${item?.title || 'item'}. Skipping.`, 'error');
-        //      if (websiteTimeoutId) clearTimeout(websiteTimeoutId); // Clear timer if running
-        //      websiteTimeoutId = null;
-        //      setTimeout(playNextItem, 2000); // Skip after delay
-        // });
-
-
+        
         // --- Initial Load & Periodic Refresh ---
         fetchPlaylist(); // Initial fetch
 
