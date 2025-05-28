@@ -20,7 +20,7 @@ As an administrator, you'll need to find these automatically registered browsers
     * Look for entries with a long, unique **Identifier** (UUID format, e.g., `a1b2c3d4-e5f6-7890-1234-567890abcdef`).
     * The "Name" field will likely be empty for new, unconfigured browsers.
     * The "Last seen" timestamp can help identify recently connected displays.
-    * *Tip:* If your player page briefly shows the Browser ID on connection (status overlay), you can use that to match. Otherwise, for accessible devices, browser developer tools (Local Storage, looking for `browserDisplayIdentifier`) can reveal the ID.
+    * *Tip:* Your player page briefly shows the Browser ID on connection (status overlay), you can use that to match.
 
 ## Naming and Configuring a Display
 
