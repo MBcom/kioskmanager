@@ -81,6 +81,25 @@
             word-break: break-all;
             display: inline-block;
         }
+
+        #videoPlayer::-webkit-media-controls,
+        #videoPlayer::-webkit-media-controls-enclosure,
+        #videoPlayer::-webkit-media-controls-panel,
+        #videoPlayer::-webkit-media-controls-overlay-play-button {
+            display: none !important;
+            -webkit-appearance: none !important;
+        }
+        
+        #videoPlayer {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        /* For Firefox */
+        #videoPlayer::-moz-range-thumb,
+        #videoPlayer::-moz-range-track {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -110,11 +129,13 @@
         let websiteTimeoutId = null;
         let browserIdentifier = null;
         let currentGroupName = 'None';
+        let show_status = true; // Flag to control status messages
         const API_ENDPOINT = '/api/playlist/'; // Defined in Django URLs
         const RETRY_DELAY_MS = 15000; // Time to wait before retrying API fetch on error
         const RELOAD_PLAYLIST_INTERVAL_MS = 5 * 60 * 1000; // Reload playlist every 5 minutes
 
         function showStatus(message, type = 'info') {
+            if (!show_status) return; // Don't show status if flag is false
             console.log(`Status [${type}]: ${message}`);
             statusOverlay.textContent = message;
             statusOverlay.className = type; // Set class for styling (e.g., 'error', 'loading')
@@ -176,6 +197,7 @@
                      // Potentially update local storage if backend corrects it? Risky.
                 }
 
+                show_status = data.show_status;
                 playlist = data.playlist || [];
                 currentGroupName = data.group_name || 'None';
                 console.log(`Playlist loaded. Group: '${currentGroupName}', Items: ${playlist.length}`);

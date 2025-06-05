@@ -16,6 +16,11 @@ class DisplayGroup(models.Model):
         help_text='Users who can manage content items and playlist for this group.'
     )
 
+    show_status = models.BooleanField(
+        default=True,
+        help_text='Show status information when switching between content items.'
+    )
+
     def __str__(self):
         return self.name
 

@@ -69,7 +69,8 @@ def get_playlist_api(request):
     return JsonResponse({
         'browser_id': str(browser.identifier), # Return the ID used
         'group_name': group_name,
-        'playlist': playlist_items
+        'playlist': playlist_items,
+        'show_status': browser.group.show_status if browser.group else True,
     })
 
 
