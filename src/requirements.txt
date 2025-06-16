@@ -1,5 +1,5 @@
 Django==4.2.21
-django-health-check==3.18.3
+django-health-check==3.19.2
 django-unfold==0.46.0
 psycopg[binary]>=3.1
 gunicorn==23.0.0
