@@ -76,4 +76,6 @@ def get_playlist_api(request):
 
 # Player view remains simple - just serves the HTML template
 def video_player_view(request):
-    return render(request, 'kioskmanager/player.html')
+    response = render(request, 'kioskmanager/player.html')
+    response['Cross-Origin-Opener-Policy'] = 'same-origin-allow-popups'
+    return response
