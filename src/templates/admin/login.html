@@ -5,7 +5,7 @@
     {% if OIDC_ENABLED %}
     <div class="submit-row">
             <div class="submit-row">
-                <a href="{% url 'oidc_authentication_init' %}" class="bg-secondary mt-5 border border-transparent flex flex-row font-semibold group items-center justify-center py-4 rounded text-sm text-white w-full">
+                <a href="{% url 'oidc_authentication_init' %}" class="bg-secondary mt-5 border border-transparent flex flex-row font-semibold group items-center justify-center py-4 rounded text-sm w-full">
                     Sign in with {{ OIDC_PROVIDER_NAME|default:"SSO" }}
                 </a>
             </div>
