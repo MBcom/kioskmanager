@@ -8,7 +8,7 @@ appVersion: "v1.4.0" # Your application version
 # Optional Dependency: Bitnami PostgreSQL chart
 dependencies:
   - name: postgresql
-    version: 16.7.9 # Specify a compatible version range (check Bitnami chart releases)
+    version: 18.1.1 # Specify a compatible version range (check Bitnami chart releases)
     repository: "https://charts.bitnami.com/bitnami" # Use OCI repository
     # condition: postgresql.enabled means this chart is only included if values.postgresql.enabled is true
     condition: postgresql.enabled
