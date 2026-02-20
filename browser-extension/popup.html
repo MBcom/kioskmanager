@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kiosk Browser Command</title>
   <link rel="stylesheet" href="popup.css">
 </head>
@@ -13,24 +12,25 @@
         <span class="logo">⌨</span>
         <h1>Kiosk Browser Command</h1>
       </div>
-      <div id="statusDot" class="status-dot" title="Verbindungsstatus"></div>
+      <div id="statusDot" class="status-dot" title="Connection status"></div>
     </header>
 
+    <!-- Connection info -->
     <section class="info-section">
       <div class="info-row">
-        <span class="info-label">Browser-ID</span>
+        <span class="info-label">Browser ID</span>
         <span class="info-value mono" id="browserId" title="">–</span>
       </div>
       <div class="info-row">
         <span class="info-label">Kiosk Manager</span>
-        <span class="info-value" id="kmUrl">Nicht konfiguriert</span>
+        <span class="info-value" id="kmUrl">Not configured</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Letzter Poll</span>
+        <span class="info-label">Last poll</span>
         <span class="info-value" id="lastPoll">–</span>
       </div>
       <div class="info-row" id="groupRow" style="display:none">
-        <span class="info-label">Gruppe</span>
+        <span class="info-label">Group</span>
         <span class="info-value" id="groupName">–</span>
       </div>
       <div class="error-banner" id="errorBanner" style="display:none">
@@ -38,23 +38,49 @@
       </div>
     </section>
 
+    <!-- Playlist -->
+    <section class="playlist-section">
+      <div class="scripts-header">
+        <span class="scripts-title">Playlist</span>
+        <span class="scripts-count" id="playlistCount"></span>
+      </div>
+
+      <div id="playlistEmpty" class="scripts-empty">No playlist from Kiosk Manager</div>
+
+      <div id="playlistRunning" style="display:none">
+        <div class="playlist-current">
+          <div class="playlist-item-title" id="currentItemTitle">–</div>
+          <div class="playlist-progress-wrap">
+            <div class="playlist-progress-bar" id="progressBar"></div>
+          </div>
+          <div class="playlist-timer" id="playlistTimer">–</div>
+        </div>
+        <div class="playlist-controls">
+          <button id="prevBtn"   class="btn btn-ghost btn-sm">◀</button>
+          <button id="stopBtn"   class="btn btn-ghost btn-sm">⏹ Stop</button>
+          <button id="nextBtn"   class="btn btn-ghost btn-sm">▶</button>
+        </div>
+      </div>
+
+      <div id="playlistStopped" style="display:none">
+        <button id="startBtn" class="btn btn-primary btn-sm" style="width:100%;margin-top:4px">▶ Start Playlist</button>
+      </div>
+    </section>
+
+    <!-- Scripts -->
     <section class="scripts-section">
       <div class="scripts-header">
-        <span class="scripts-title">Scripts für diese Seite</span>
+        <span class="scripts-title">Scripts for this page</span>
         <span class="scripts-count" id="scriptsCount"></span>
       </div>
       <div id="scriptsList" class="scripts-list">
-        <div class="scripts-empty">Keine Scripts verfügbar</div>
+        <div class="scripts-empty">No scripts available</div>
       </div>
     </section>
 
     <footer class="footer">
-      <button id="pollBtn" class="btn btn-ghost" title="Kiosk Manager jetzt abfragen">
-        ↻ Abfragen
-      </button>
-      <button id="optionsBtn" class="btn btn-primary">
-        ⚙ Einstellungen
-      </button>
+      <button id="pollBtn"    class="btn btn-ghost">↻ Refresh</button>
+      <button id="optionsBtn" class="btn btn-primary">⚙ Settings</button>
     </footer>
   </div>
 

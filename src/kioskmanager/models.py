@@ -94,11 +94,22 @@ class ContentItem(models.Model):
 
 
 class AutomationScript(models.Model):
-    """A Cypress-like automation script assigned to a DisplayGroup."""
-    group = models.ForeignKey(
-        DisplayGroup,
-        on_delete=models.CASCADE,
+    """A Cypress-like automation script that can be linked to multiple ContentItems.
+
+    Scripts are delivered to the browser extension via the playlist API and
+    executed automatically when the browser navigates to a URL matching
+    ``url_pattern``.  A single script can be assigned to any number of content
+    items, making it easy to reuse a login script across several dashboards.
+
+    Access to this model in the Django admin is restricted to superusers and
+    users who hold the ``manage_automation_scripts`` permission.
+    """
+    content_items = models.ManyToManyField(
+        'ContentItem',
         related_name='automation_scripts',
+        blank=True,
+        help_text="Content items this script is associated with. "
+                  "One script can be linked to multiple items.",
     )
     name = models.CharField(max_length=200)
     url_pattern = models.CharField(
@@ -106,29 +117,32 @@ class AutomationScript(models.Model):
         blank=True,
         null=True,
         help_text=(
-            "URL-Muster für automatischen Start, z.B. *://login.microsoftonline.com/*. "
-            "Leer lassen für ausschließlich manuellen Start."
+            "URL pattern for automatic triggering, e.g. *://login.microsoftonline.com/*. "
+            "Leave empty for manual execution only."
         ),
     )
     content = models.TextField(
         help_text=(
-            "Cypress-ähnliches Automation-Script. "
-            "Verfügbar: cy.get(), .click(), .type(), cy.wait(), cy.waitForUrl(), etc."
+            "Cypress-like automation script. "
+            "Available commands: cy.get(), .click(), .type(), cy.wait(), cy.waitForUrl(), etc."
         ),
     )
     enabled = models.BooleanField(default=True)
     order = models.PositiveIntegerField(
         default=0,
-        help_text="Reihenfolge bei mehreren Scripts (aufsteigend).",
+        help_text="Execution order when multiple scripts match (ascending).",
     )
 
     class Meta:
-        ordering = ['group', 'order', 'name']
+        ordering = ['order', 'name']
         verbose_name = "Automation Script"
         verbose_name_plural = "Automation Scripts"
+        permissions = [
+            ('manage_automation_scripts', 'Can view and manage automation scripts'),
+        ]
 
     def __str__(self):
-        return f"{self.group.name} – {self.name}"
+        return self.name
 
 
 class PlaylistEntry(models.Model):

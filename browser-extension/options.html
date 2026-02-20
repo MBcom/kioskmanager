@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kiosk Browser Command – Einstellungen</title>
+  <title>Kiosk Browser Command – Settings</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <aside class="sidebar">
       <div class="sidebar-logo">⌨ KBC</div>
       <nav class="sidebar-nav">
-        <a href="#settings" class="nav-item active" data-section="settings">Verbindung</a>
+        <a href="#settings" class="nav-item active" data-section="settings">Connection</a>
         <a href="#scripts"  class="nav-item"         data-section="scripts">Scripts</a>
         <a href="#docs"     class="nav-item"         data-section="docs">API Docs</a>
       </nav>
@@ -19,43 +19,43 @@
 
     <main class="main">
 
-      <!-- ── Verbindung ──────────────────────────────────────────── -->
+      <!-- ── Connection ─────────────────────────────────────────── -->
       <section id="section-settings" class="section active">
-        <h2 class="section-title">Kiosk Manager Verbindung</h2>
+        <h2 class="section-title">Kiosk Manager Connection</h2>
 
         <div class="card">
           <div class="form-group">
             <label for="kioskManagerUrl">Kiosk Manager URL</label>
             <input type="url" id="kioskManagerUrl"
               placeholder="https://kiosk-manager.example.com">
-            <p class="hint">URL des Django-Services, ohne abschließenden Schrägstrich.</p>
+            <p class="hint">URL of the Django service, without a trailing slash.</p>
           </div>
 
           <div class="form-row">
             <div class="form-group" style="flex:1">
-              <label for="pollInterval">Poll-Intervall (Minuten)</label>
+              <label for="pollInterval">Poll interval (minutes)</label>
               <input type="number" id="pollInterval" min="1" max="60" value="1" style="width:80px">
             </div>
             <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
               <label class="toggle-label">
                 <input type="checkbox" id="kioskEnabled" checked>
-                <span>Polling aktiv</span>
+                <span>Polling enabled</span>
               </label>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Browser-ID (schreibgeschützt)</label>
+            <label>Browser ID (read-only)</label>
             <div class="browser-id-row">
               <input type="text" id="browserIdDisplay" readonly class="mono">
-              <button id="copyBrowserId" class="btn btn-ghost btn-sm">Kopieren</button>
+              <button id="copyBrowserId" class="btn btn-ghost btn-sm">Copy</button>
             </div>
-            <p class="hint">Diese ID identifiziert diesen Browser im Kiosk Manager.</p>
+            <p class="hint">This ID identifies this browser in the Kiosk Manager.</p>
           </div>
 
           <div class="form-actions">
-            <button id="saveSettingsBtn" class="btn btn-primary">Speichern</button>
-            <button id="testConnectionBtn" class="btn btn-ghost">Verbindung testen</button>
+            <button id="saveSettingsBtn" class="btn btn-primary">Save</button>
+            <button id="testConnectionBtn" class="btn btn-ghost">Test connection</button>
             <span id="settingsSaveStatus" class="save-status"></span>
           </div>
         </div>
@@ -66,10 +66,10 @@
         <h2 class="section-title">Automation Scripts</h2>
 
         <div class="scripts-layout">
-          <!-- Script-Liste links -->
+          <!-- Script list (left) -->
           <div class="scripts-list-panel">
             <div class="list-toolbar">
-              <button id="newScriptBtn" class="btn btn-primary btn-sm">+ Neu</button>
+              <button id="newScriptBtn" class="btn btn-primary btn-sm">+ New</button>
               <div class="list-tools">
                 <button id="exportBtn"  class="btn btn-ghost btn-sm">↑ Export</button>
                 <label  class="btn btn-ghost btn-sm">↓ Import
@@ -80,33 +80,33 @@
             <ul id="scriptsList" class="scripts-list"></ul>
           </div>
 
-          <!-- Editor rechts -->
+          <!-- Editor (right) -->
           <div class="editor-panel">
             <div id="editorPlaceholder" class="editor-placeholder">
-              <p>👈 Script auswählen oder neu erstellen</p>
+              <p>👈 Select a script or create a new one</p>
             </div>
 
             <div id="editorForm" style="display:none" class="editor-form">
               <div class="editor-header">
                 <input type="text" id="scriptName" class="script-name-input"
-                  placeholder="Script-Name">
+                  placeholder="Script name">
                 <div class="editor-header-actions">
-                  <button id="duplicateBtn" class="btn btn-ghost btn-sm">Duplizieren</button>
-                  <button id="deleteBtn"    class="btn btn-danger btn-sm">Löschen</button>
+                  <button id="duplicateBtn" class="btn btn-ghost btn-sm">Duplicate</button>
+                  <button id="deleteBtn"    class="btn btn-danger btn-sm">Delete</button>
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group" style="flex:1">
-                  <label for="scriptUrlPattern">URL-Muster <span class="badge">auto-trigger</span></label>
+                  <label for="scriptUrlPattern">URL pattern <span class="badge">auto-trigger</span></label>
                   <input type="text" id="scriptUrlPattern"
-                    placeholder="*://login.microsoftonline.com/* (leer = nur manuell)">
-                  <p class="hint">Wildcards mit <code>*</code> möglich. Passt die URL, startet das Script automatisch beim Seitenaufruf.</p>
+                    placeholder="*://login.microsoftonline.com/* (empty = manual only)">
+                  <p class="hint">Wildcards with <code>*</code> supported. If the URL matches, the script runs automatically on page load.</p>
                 </div>
                 <div class="form-group" style="width:120px;display:flex;align-items:flex-end;padding-bottom:4px">
                   <label class="toggle-label">
                     <input type="checkbox" id="scriptEnabled" checked>
-                    <span>Aktiv</span>
+                    <span>Enabled</span>
                   </label>
                 </div>
               </div>
@@ -128,8 +128,8 @@
               </div>
 
               <div class="editor-footer">
-                <button id="saveScriptBtn"  class="btn btn-primary">💾 Speichern</button>
-                <button id="runScriptBtn"   class="btn btn-ghost">▶ Auf aktiver Seite ausführen</button>
+                <button id="saveScriptBtn"  class="btn btn-primary">💾 Save</button>
+                <button id="runScriptBtn"   class="btn btn-ghost">▶ Run on active page</button>
                 <span id="scriptSaveStatus" class="save-status"></span>
               </div>
             </div>
@@ -139,86 +139,82 @@
 
       <!-- ── API Docs ────────────────────────────────────────────── -->
       <section id="section-docs" class="section">
-        <h2 class="section-title">Verfügbare Befehle (Cypress-ähnliche API)</h2>
+        <h2 class="section-title">Available Commands (Cypress-like API)</h2>
 
         <div class="card">
           <p class="docs-intro">
-            Scripts werden mit <code>cy</code> als verfügbarem Objekt ausgeführt.
-            Befehle werden zu einer Queue hinzugefügt und sequenziell abgearbeitet.
+            Scripts are executed with <code>cy</code> as the available object.
+            Commands are added to a queue and executed sequentially.
           </p>
 
           <h3>Navigation</h3>
           <table class="api-table">
-            <thead><tr><th>Befehl</th><th>Beschreibung</th><th>Beispiel</th></tr></thead>
+            <thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead>
             <tbody>
-              <tr><td><code>cy.visit(url)</code></td><td>URL aufrufen</td><td><code>cy.visit('https://powerbi.com')</code></td></tr>
-              <tr><td><code>cy.waitForUrl(text)</code></td><td>Warten bis URL den Text enthält</td><td><code>cy.waitForUrl('app.powerbi')</code></td></tr>
+              <tr><td><code>cy.visit(url)</code></td><td>Navigate to URL</td><td><code>cy.visit('https://powerbi.com')</code></td></tr>
+              <tr><td><code>cy.waitForUrl(text)</code></td><td>Wait until URL contains text</td><td><code>cy.waitForUrl('app.powerbi')</code></td></tr>
             </tbody>
           </table>
 
-          <h3>Element-Selektion</h3>
+          <h3>Element Selection</h3>
           <table class="api-table">
-            <thead><tr><th>Befehl</th><th>Beschreibung</th><th>Beispiel</th></tr></thead>
+            <thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead>
             <tbody>
-              <tr><td><code>cy.get(selector)</code></td><td>Element per CSS-Selektor finden (wartet)</td><td><code>cy.get('#email')</code></td></tr>
-              <tr><td><code>cy.contains(text)</code></td><td>Element per sichtbarem Text finden</td><td><code>cy.contains('Anmelden')</code></td></tr>
+              <tr><td><code>cy.get(selector)</code></td><td>Find element by CSS selector (waits)</td><td><code>cy.get('#email')</code></td></tr>
+              <tr><td><code>cy.contains(text)</code></td><td>Find element by visible text</td><td><code>cy.contains('Sign in')</code></td></tr>
             </tbody>
           </table>
 
-          <h3>Aktionen (nach <code>cy.get()</code> angehängt)</h3>
+          <h3>Actions (chained after <code>cy.get()</code>)</h3>
           <table class="api-table">
-            <thead><tr><th>Befehl</th><th>Beschreibung</th><th>Beispiel</th></tr></thead>
+            <thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead>
             <tbody>
-              <tr><td><code>.click()</code></td><td>Element klicken</td><td><code>cy.get('button').click()</code></td></tr>
-              <tr><td><code>.type(text)</code></td><td>Text eingeben (React/Angular-kompatibel)</td><td><code>cy.get('input').type('hallo')</code></td></tr>
-              <tr><td><code>.clear()</code></td><td>Eingabefeld leeren</td><td><code>cy.get('input').clear()</code></td></tr>
-              <tr><td><code>.pressEnter()</code></td><td>Enter-Taste drücken</td><td><code>cy.get('input').pressEnter()</code></td></tr>
-              <tr><td><code>.select(value)</code></td><td>Select-Dropdown-Wert setzen</td><td><code>cy.get('select').select('de')</code></td></tr>
-              <tr><td><code>.check(bool)</code></td><td>Checkbox aktivieren/deaktivieren</td><td><code>cy.get('[type=checkbox]').check(true)</code></td></tr>
+              <tr><td><code>.click()</code></td><td>Click the element</td><td><code>cy.get('button').click()</code></td></tr>
+              <tr><td><code>.type(text)</code></td><td>Type text (React/Angular compatible)</td><td><code>cy.get('input').type('hello')</code></td></tr>
+              <tr><td><code>.clear()</code></td><td>Clear an input field</td><td><code>cy.get('input').clear()</code></td></tr>
+              <tr><td><code>.pressEnter()</code></td><td>Press the Enter key</td><td><code>cy.get('input').pressEnter()</code></td></tr>
+              <tr><td><code>.autofill()</code></td><td>Trigger browser autofill + notify React</td><td><code>cy.get('input').autofill()</code></td></tr>
+              <tr><td><code>.select(value)</code></td><td>Set a select dropdown value</td><td><code>cy.get('select').select('en')</code></td></tr>
+              <tr><td><code>.check(bool)</code></td><td>Check or uncheck a checkbox</td><td><code>cy.get('[type=checkbox]').check(true)</code></td></tr>
             </tbody>
           </table>
 
-          <h3>Warten</h3>
+          <h3>Waiting</h3>
           <table class="api-table">
-            <thead><tr><th>Befehl</th><th>Beschreibung</th><th>Beispiel</th></tr></thead>
+            <thead><tr><th>Command</th><th>Description</th><th>Example</th></tr></thead>
             <tbody>
-              <tr><td><code>cy.wait(ms)</code></td><td>Feste Wartezeit in Millisekunden</td><td><code>cy.wait(2000)</code></td></tr>
-              <tr><td><code>cy.waitForUrl(pattern)</code></td><td>Warten bis URL-Muster passt</td><td><code>cy.waitForUrl('login.live.com')</code></td></tr>
-              <tr><td><code>.waitForHidden(sel)</code></td><td>Warten bis Element verschwindet</td><td><code>cy.waitForHidden('.spinner')</code></td></tr>
+              <tr><td><code>cy.wait(ms)</code></td><td>Fixed wait in milliseconds</td><td><code>cy.wait(2000)</code></td></tr>
+              <tr><td><code>cy.waitForUrl(pattern)</code></td><td>Wait until URL matches pattern</td><td><code>cy.waitForUrl('login.live.com')</code></td></tr>
+              <tr><td><code>.waitForHidden(sel)</code></td><td>Wait until element disappears</td><td><code>cy.waitForHidden('.spinner')</code></td></tr>
             </tbody>
           </table>
 
-          <h3>Assertions & Logging</h3>
+          <h3>Assertions &amp; Logging</h3>
           <table class="api-table">
-            <thead><tr><th>Befehl</th><th>Beschreibung</th></tr></thead>
+            <thead><tr><th>Command</th><th>Description</th></tr></thead>
             <tbody>
-              <tr><td><code>.should('exist')</code></td><td>Element muss vorhanden sein</td></tr>
-              <tr><td><code>.should('be.visible')</code></td><td>Element muss sichtbar sein</td></tr>
-              <tr><td><code>.should('have.value', v)</code></td><td>Eingabefeld muss Wert haben</td></tr>
-              <tr><td><code>.should('contain', text)</code></td><td>Element muss Text enthalten</td></tr>
-              <tr><td><code>cy.log(msg)</code></td><td>Nachricht in Browser-Konsole ausgeben</td></tr>
+              <tr><td><code>.should('exist')</code></td><td>Element must be present</td></tr>
+              <tr><td><code>.should('be.visible')</code></td><td>Element must be visible</td></tr>
+              <tr><td><code>.should('have.value', v)</code></td><td>Input must have value</td></tr>
+              <tr><td><code>.should('contain', text)</code></td><td>Element must contain text</td></tr>
+              <tr><td><code>cy.log(msg)</code></td><td>Print message to browser console</td></tr>
             </tbody>
           </table>
 
-          <h3>Beispiel: PowerBI Login</h3>
-          <pre class="code-block">// Script für URL-Muster: *://login.microsoftonline.com/*
+          <h3>Example: PowerBI Login</h3>
+          <pre class="code-block">// Script for URL pattern: *://login.microsoftonline.com/*
+// Uses browser-saved credentials (no passwords in the script)
 
-cy.log("Starte Microsoft Login...");
+cy.log("Starting Microsoft login...");
 
-// E-Mail-Schritt
-cy.get('input[type="email"]').type("user@example.com");
-cy.get('input[type="submit"]').click();
+cy.wait(1000); // wait for browser autofill
+cy.get('#idSIButton9').click();  // Next
 cy.wait(2000);
-
-// Passwort-Schritt
-cy.get('input[type="password"]').type("geheimesPasswort");
-cy.get('input[type="submit"]').click();
+cy.get('#idSIButton9').click();  // Sign in
 cy.wait(3000);
+cy.get('#idBtn_Back').click();   // Stay signed in? → No
 
-// "Angemeldet bleiben?" – Nein klicken
-// cy.get("#idBtn_Back").click();
-
-cy.log("Login abgeschlossen ✓");</pre>
+cy.log("Login complete ✓");</pre>
         </div>
       </section>
 

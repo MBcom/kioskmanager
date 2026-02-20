@@ -6,32 +6,27 @@
 
 const SNIPPETS = {
   'powerbi': `// PowerBI / Microsoft Login Automation
-// URL-Muster für dieses Script: *://login.microsoftonline.com/*
+// URL pattern for this script: *://login.microsoftonline.com/*
+// Uses browser-saved credentials – no passwords needed in the script
 
-cy.log("Starte Microsoft Login...");
+cy.log("Starting Microsoft login...");
 
-// Schritt 1: E-Mail eingeben
-cy.get('input[type="email"]').type("IHR_LOGIN@example.com");
-cy.get('input[type="submit"]').click();
+cy.wait(1000); // wait for browser autofill
+cy.get('#idSIButton9').click();  // Next (email already filled)
 cy.wait(2000);
-
-// Schritt 2: Passwort eingeben
-cy.get('input[type="password"]').type("IHR_PASSWORT");
-cy.get('input[type="submit"]').click();
+cy.get('#idSIButton9').click();  // Sign in (password already filled)
 cy.wait(3000);
+cy.get('#idBtn_Back').click();   // Stay signed in? → No
 
-// Schritt 3: "Angemeldet bleiben?" – optional ablehnen
-// cy.get("#idBtn_Back").click();
-
-cy.log("Login abgeschlossen ✓");`,
+cy.log("Login complete ✓");`,
 
   'get-type': `cy.get('input[name="email"]').type("user@example.com");`,
 
   'get-click': `cy.get('button[type="submit"]').click();`,
 
-  'wait': `cy.wait(2000); // 2 Sekunden warten`,
+  'wait': `cy.wait(2000); // wait 2 seconds`,
 
-  'waitForUrl': `cy.waitForUrl("app.powerbi.com"); // Warten bis URL diesen Text enthält`,
+  'waitForUrl': `cy.waitForUrl("app.powerbi.com"); // wait until URL contains this text`,
 };
 
 // ─── State ──────────────────────────────────────────────────────────────────
@@ -78,7 +73,7 @@ async function loadSettings() {
   document.getElementById('kioskManagerUrl').value = settings.kioskManagerUrl;
   document.getElementById('kioskEnabled').checked = settings.kioskEnabled;
   document.getElementById('pollInterval').value = settings.pollInterval;
-  document.getElementById('browserIdDisplay').value = local.browserId || '(wird beim ersten Start generiert)';
+  document.getElementById('browserIdDisplay').value = local.browserId || '(generated on first use)';
 }
 
 function setupSettingsHandlers() {
@@ -87,7 +82,7 @@ function setupSettingsHandlers() {
   document.getElementById('copyBrowserId').addEventListener('click', () => {
     const val = document.getElementById('browserIdDisplay').value;
     navigator.clipboard.writeText(val).then(() => {
-      showStatus('settingsSaveStatus', 'Kopiert ✓');
+      showStatus('settingsSaveStatus', 'Copied ✓');
     });
   });
 }
@@ -101,24 +96,24 @@ async function saveSettings() {
 
   await chrome.storage.sync.set(settings);
   await chrome.runtime.sendMessage({ action: 'updateAlarm', interval: settings.pollInterval });
-  showStatus('settingsSaveStatus', 'Gespeichert ✓');
+  showStatus('settingsSaveStatus', 'Saved ✓');
 }
 
 async function testConnection() {
   const url = document.getElementById('kioskManagerUrl').value.trim().replace(/\/$/, '');
   if (!url) {
-    showStatus('settingsSaveStatus', 'Keine URL eingetragen', 'error');
+    showStatus('settingsSaveStatus', 'No URL entered', 'error');
     return;
   }
 
-  showStatus('settingsSaveStatus', 'Teste…');
+  showStatus('settingsSaveStatus', 'Testing…');
   await chrome.runtime.sendMessage({ action: 'pollNow' });
 
   const result = await chrome.storage.local.get(['connectionStatus', 'connectionError']);
   if (result.connectionStatus === 'ok') {
-    showStatus('settingsSaveStatus', 'Verbindung erfolgreich ✓');
+    showStatus('settingsSaveStatus', 'Connection successful ✓');
   } else {
-    showStatus('settingsSaveStatus', 'Fehler: ' + (result.connectionError || 'Unbekannt'), 'error');
+    showStatus('settingsSaveStatus', 'Error: ' + (result.connectionError || 'Unknown'), 'error');
   }
 }
 
@@ -140,7 +135,7 @@ function renderList() {
   list.innerHTML = '';
 
   if (scripts.length === 0) {
-    list.innerHTML = '<li class="empty">Noch keine Scripts</li>';
+    list.innerHTML = '<li class="empty">No scripts yet</li>';
     return;
   }
 
@@ -152,7 +147,7 @@ function renderList() {
     li.innerHTML = `
       <div style="flex:1;overflow:hidden">
         <span class="script-list-name">${escHtml(script.name)}</span>
-        <span class="script-list-meta">${script.urlPattern ? escHtml(script.urlPattern) : '⚙ manuell'}</span>
+        <span class="script-list-meta">${script.urlPattern ? escHtml(script.urlPattern) : '⚙ manual'}</span>
       </div>
       <span class="script-status ${enabled ? 'enabled' : 'disabled'}">${enabled ? '●' : '○'}</span>
     `;
@@ -163,7 +158,7 @@ function renderList() {
 
 function selectScript(id) {
   if (hasUnsavedChanges && currentScriptId) {
-    if (!confirm('Ungespeicherte Änderungen verwerfen?')) return;
+    if (!confirm('Discard unsaved changes?')) return;
     hasUnsavedChanges = false;
   }
 
@@ -192,7 +187,7 @@ function setupScriptHandlers() {
   document.getElementById('exportBtn').addEventListener('click', exportScripts);
   document.getElementById('importFile').addEventListener('change', importScripts);
 
-  // Änderungs-Tracking
+  // Track unsaved changes
   ['scriptName', 'scriptUrlPattern', 'scriptContent'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => {
       hasUnsavedChanges = true;
@@ -207,16 +202,16 @@ function createNewScript() {
   const id = Date.now().toString(36);
   const script = {
     id,
-    name: 'Neues Script',
+    name: 'New Script',
     urlPattern: '',
     enabled: true,
-    content: '// Script hier eingeben\n// cy.get(\'input\').type(\'text\');\n// cy.get(\'button\').click();\n'
+    content: '// Enter your script here\n// cy.get(\'input\').type(\'text\');\n// cy.get(\'button\').click();\n'
   };
   scripts.unshift(script);
   saveAllScripts();
   selectScript(id);
 
-  // In Scripts-Tab wechseln
+  // Switch to Scripts tab
   document.querySelector('[data-section="scripts"]').click();
   setTimeout(() => document.getElementById('scriptName').select(), 100);
 }
@@ -236,13 +231,13 @@ async function saveCurrentScript() {
 
   await saveAllScripts();
   hasUnsavedChanges = false;
-  showStatus('scriptSaveStatus', 'Gespeichert ✓');
+  showStatus('scriptSaveStatus', 'Saved ✓');
 }
 
 async function deleteCurrentScript() {
   if (!currentScriptId) return;
   const script = scripts.find(s => s.id === currentScriptId);
-  if (!confirm(`Script "${script?.name}" wirklich löschen?`)) return;
+  if (!confirm(`Really delete script "${script?.name}"?`)) return;
 
   scripts = scripts.filter(s => s.id !== currentScriptId);
   currentScriptId = null;
@@ -255,7 +250,7 @@ async function deleteCurrentScript() {
 
 async function duplicateCurrentScript() {
   if (!currentScriptId) return;
-  await saveCurrentScript(); // Erst speichern
+  await saveCurrentScript(); // Save first
 
   const original = scripts.find(s => s.id === currentScriptId);
   if (!original) return;
@@ -263,7 +258,7 @@ async function duplicateCurrentScript() {
   const copy = {
     ...original,
     id: Date.now().toString(36),
-    name: original.name + ' (Kopie)'
+    name: original.name + ' (Copy)'
   };
 
   scripts.unshift(copy);
@@ -280,7 +275,7 @@ async function runCurrentScript() {
 
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   if (!tab?.id) {
-    showStatus('scriptSaveStatus', 'Kein aktiver Tab', 'error');
+    showStatus('scriptSaveStatus', 'No active tab', 'error');
     return;
   }
 
@@ -290,9 +285,9 @@ async function runCurrentScript() {
       scriptContent: script.content,
       scriptName: script.name
     });
-    showStatus('scriptSaveStatus', 'Gestartet ✓');
+    showStatus('scriptSaveStatus', 'Started ✓');
   } catch (err) {
-    // Content-Script noch nicht geladen → erst injizieren
+    // Content script not yet loaded – inject it first
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -303,9 +298,9 @@ async function runCurrentScript() {
         scriptContent: script.content,
         scriptName: script.name
       });
-      showStatus('scriptSaveStatus', 'Gestartet ✓');
+      showStatus('scriptSaveStatus', 'Started ✓');
     } catch (err2) {
-      showStatus('scriptSaveStatus', 'Fehler: ' + err2.message, 'error');
+      showStatus('scriptSaveStatus', 'Error: ' + err2.message, 'error');
     }
   }
 }
@@ -323,7 +318,7 @@ function setupSnippets() {
       const before = textarea.value.substring(0, start);
       const after = textarea.value.substring(textarea.selectionEnd);
 
-      // Snippet mit Leerzeile einfügen
+      // Insert snippet with a blank line
       const insert = (before.length > 0 && !before.endsWith('\n') ? '\n' : '') + snippet + '\n';
       textarea.value = before + insert + after;
       textarea.focus();
@@ -360,13 +355,13 @@ async function importScripts(e) {
     const text = await file.text();
     const data = JSON.parse(text);
 
-    if (!Array.isArray(data.scripts)) throw new Error('Ungültiges Format: "scripts" Array fehlt');
+    if (!Array.isArray(data.scripts)) throw new Error('Invalid format: "scripts" array missing');
 
     const newCount = data.scripts.filter(imp =>
       !scripts.some(s => s.name === imp.name)
     ).length;
 
-    if (!confirm(`${data.scripts.length} Script(s) importieren? Davon ${newCount} neu, ${data.scripts.length - newCount} bereits vorhanden (werden übersprungen).`)) return;
+    if (!confirm(`Import ${data.scripts.length} script(s)? ${newCount} new, ${data.scripts.length - newCount} already exist (will be skipped).`)) return;
 
     for (const imp of data.scripts) {
       const exists = scripts.findIndex(s => s.name === imp.name);
@@ -376,9 +371,9 @@ async function importScripts(e) {
     }
 
     await saveAllScripts();
-    showStatus('scriptSaveStatus', `${newCount} Script(s) importiert ✓`);
+    showStatus('scriptSaveStatus', `${newCount} script(s) imported ✓`);
   } catch (err) {
-    showStatus('scriptSaveStatus', 'Import-Fehler: ' + err.message, 'error');
+    showStatus('scriptSaveStatus', 'Import error: ' + err.message, 'error');
   }
 }
 

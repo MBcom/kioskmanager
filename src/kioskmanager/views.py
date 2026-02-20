@@ -46,46 +46,40 @@ def get_playlist_api(request):
         for entry in entries:
             item = entry.content_item
             data = {
-                'id': item.id, # Useful for frontend debugging/keys
+                'id': item.id,
                 'title': item.title,
                 'type': item.content_type,
             }
-            # Ensure necessary fields are present and build absolute URIs for media
             if item.content_type == 'video' and item.video_file:
                 try:
                     data['url'] = request.build_absolute_uri(item.video_file.url)
                 except ValueError:
-                     print(f"Warning: Could not build URL for video file (likely missing): {item.video_file}")
-                     continue # Skip this item if URL can't be built
+                    print(f"Warning: Could not build URL for video file: {item.video_file}")
+                    continue
             elif item.content_type == 'website' and item.url and item.duration:
                 data['url'] = item.url
-                data['duration'] = item.duration # Duration comes from the ContentItem
+                data['duration'] = item.duration
             else:
-                 print(f"Warning: Skipping invalid playlist item: ID={item.id}, Type={item.content_type}, Title={item.title}")
-                 continue # Skip items missing required data
+                print(f"Warning: Skipping invalid playlist item: ID={item.id}")
+                continue
+
+            # Automation scripts linked to this content item (M2M)
+            item_scripts = AutomationScript.objects.filter(
+                content_items=item,
+                enabled=True,
+            ).order_by('order', 'name')
+            data['scripts'] = [
+                {'name': s.name, 'url_pattern': s.url_pattern or '', 'content': s.content}
+                for s in item_scripts
+            ]
 
             playlist_items.append(data)
-
-    # Fetch automation scripts for this browser's group
-    scripts_data = []
-    if browser.group:
-        scripts = AutomationScript.objects.filter(
-            group=browser.group,
-            enabled=True,
-        ).order_by('order', 'name')
-        for script in scripts:
-            scripts_data.append({
-                'name': script.name,
-                'url_pattern': script.url_pattern or '',
-                'content': script.content,
-            })
 
     return JsonResponse({
         'browser_id': str(browser.identifier),
         'group_name': group_name,
         'playlist': playlist_items,
         'show_status': browser.group.show_status if browser.group else True,
-        'scripts': scripts_data,
     })
 
 

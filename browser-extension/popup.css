@@ -251,6 +251,60 @@ body {
 .btn-run.success { background: #a6e3a1; color: #1e1e2e; }
 .btn-run.error   { background: #f38ba8; color: #1e1e2e; }
 
+/* Playlist */
+.playlist-section {
+  padding: 10px 14px;
+  border-bottom: 1px solid #313244;
+}
+
+.playlist-current {
+  background: #313244;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.playlist-item-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #cdd6f4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+
+.playlist-item-title.muted { color: #585b70; }
+
+.playlist-progress-wrap {
+  height: 3px;
+  background: #45475a;
+  border-radius: 2px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.playlist-progress-bar {
+  height: 100%;
+  background: #89b4fa;
+  border-radius: 2px;
+  transition: width 1s linear;
+  width: 0%;
+}
+
+.playlist-timer {
+  font-size: 10px;
+  color: #6c7086;
+  text-align: right;
+}
+
+.playlist-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.playlist-controls .btn-sm { flex: 1; justify-content: center; }
+
 /* Footer */
 .footer {
   display: flex;
