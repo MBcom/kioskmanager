@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, Http404
 from django.utils import timezone
 from django.db import transaction
-from .models import Browser, DisplayGroup, PlaylistEntry, ContentItem
+from .models import Browser, DisplayGroup, PlaylistEntry, ContentItem, AutomationScript
 import uuid # Ensure uuid is imported
 
 @transaction.atomic # Ensure browser update/creation is atomic
@@ -66,11 +66,26 @@ def get_playlist_api(request):
 
             playlist_items.append(data)
 
+    # Fetch automation scripts for this browser's group
+    scripts_data = []
+    if browser.group:
+        scripts = AutomationScript.objects.filter(
+            group=browser.group,
+            enabled=True,
+        ).order_by('order', 'name')
+        for script in scripts:
+            scripts_data.append({
+                'name': script.name,
+                'url_pattern': script.url_pattern or '',
+                'content': script.content,
+            })
+
     return JsonResponse({
-        'browser_id': str(browser.identifier), # Return the ID used
+        'browser_id': str(browser.identifier),
         'group_name': group_name,
         'playlist': playlist_items,
         'show_status': browser.group.show_status if browser.group else True,
+        'scripts': scripts_data,
     })
 
 

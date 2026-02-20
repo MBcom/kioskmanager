@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiosk Browser Command</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <header class="header">
+      <div class="header-title">
+        <span class="logo">⌨</span>
+        <h1>Kiosk Browser Command</h1>
+      </div>
+      <div id="statusDot" class="status-dot" title="Verbindungsstatus"></div>
+    </header>
+
+    <section class="info-section">
+      <div class="info-row">
+        <span class="info-label">Browser-ID</span>
+        <span class="info-value mono" id="browserId" title="">–</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Kiosk Manager</span>
+        <span class="info-value" id="kmUrl">Nicht konfiguriert</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Letzter Poll</span>
+        <span class="info-value" id="lastPoll">–</span>
+      </div>
+      <div class="info-row" id="groupRow" style="display:none">
+        <span class="info-label">Gruppe</span>
+        <span class="info-value" id="groupName">–</span>
+      </div>
+      <div class="error-banner" id="errorBanner" style="display:none">
+        <span id="errorMsg"></span>
+      </div>
+    </section>
+
+    <section class="scripts-section">
+      <div class="scripts-header">
+        <span class="scripts-title">Scripts für diese Seite</span>
+        <span class="scripts-count" id="scriptsCount"></span>
+      </div>
+      <div id="scriptsList" class="scripts-list">
+        <div class="scripts-empty">Keine Scripts verfügbar</div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <button id="pollBtn" class="btn btn-ghost" title="Kiosk Manager jetzt abfragen">
+        ↻ Abfragen
+      </button>
+      <button id="optionsBtn" class="btn btn-primary">
+        ⚙ Einstellungen
+      </button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

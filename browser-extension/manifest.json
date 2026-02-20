@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Kiosk Browser Command",
+  "version": "1.0.0",
+  "description": "Steuert Browser-Automatisierung für Kiosk-Displays. Verbindet sich mit dem Kiosk Manager und führt Cypress-ähnliche Skripte aus.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "alarms",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_idle",
+      "exclude_matches": [
+        "chrome://*/*",
+        "chrome-extension://*/*",
+        "about:*"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Kiosk Browser Command"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

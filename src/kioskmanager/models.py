@@ -93,6 +93,44 @@ class ContentItem(models.Model):
         super().delete(*args, **kwargs)
 
 
+class AutomationScript(models.Model):
+    """A Cypress-like automation script assigned to a DisplayGroup."""
+    group = models.ForeignKey(
+        DisplayGroup,
+        on_delete=models.CASCADE,
+        related_name='automation_scripts',
+    )
+    name = models.CharField(max_length=200)
+    url_pattern = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text=(
+            "URL-Muster für automatischen Start, z.B. *://login.microsoftonline.com/*. "
+            "Leer lassen für ausschließlich manuellen Start."
+        ),
+    )
+    content = models.TextField(
+        help_text=(
+            "Cypress-ähnliches Automation-Script. "
+            "Verfügbar: cy.get(), .click(), .type(), cy.wait(), cy.waitForUrl(), etc."
+        ),
+    )
+    enabled = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text="Reihenfolge bei mehreren Scripts (aufsteigend).",
+    )
+
+    class Meta:
+        ordering = ['group', 'order', 'name']
+        verbose_name = "Automation Script"
+        verbose_name_plural = "Automation Scripts"
+
+    def __str__(self):
+        return f"{self.group.name} – {self.name}"
+
+
 class PlaylistEntry(models.Model):
     """Defines the order of a specific ContentItem within a DisplayGroup."""
     group = models.ForeignKey(DisplayGroup, on_delete=models.CASCADE, related_name='playlist_entries')

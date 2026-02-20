@@ -1,0 +1,262 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  width: 320px;
+  min-height: 200px;
+}
+
+.popup {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid #313244;
+  background: #181825;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.header h1 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #cba6f7;
+  letter-spacing: 0.3px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6c7086;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.status-dot.ok       { background: #a6e3a1; }
+.status-dot.error    { background: #f38ba8; }
+.status-dot.warning  { background: #f9e2af; }
+.status-dot.disabled { background: #45475a; }
+
+/* Info Section */
+.info-section {
+  padding: 10px 14px;
+  border-bottom: 1px solid #313244;
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.info-label {
+  color: #6c7086;
+  font-size: 11px;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: #cdd6f4;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.mono {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  color: #89b4fa;
+}
+
+.error-banner {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(243, 139, 168, 0.15);
+  border: 1px solid rgba(243, 139, 168, 0.3);
+  border-radius: 4px;
+  color: #f38ba8;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+/* Scripts Section */
+.scripts-section {
+  padding: 10px 14px;
+  flex: 1;
+}
+
+.scripts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.scripts-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c7086;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scripts-count {
+  font-size: 11px;
+  color: #6c7086;
+  background: #313244;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.scripts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scripts-empty {
+  color: #585b70;
+  font-size: 12px;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.script-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: #313244;
+  border-radius: 6px;
+  gap: 8px;
+}
+
+.script-item-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.script-item-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #cdd6f4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.script-item-pattern {
+  display: block;
+  font-size: 10px;
+  color: #6c7086;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.script-item-pattern.auto {
+  color: #a6e3a1;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #cba6f7;
+  color: #1e1e2e;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #b4befe;
+}
+
+.btn-ghost {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: #45475a;
+}
+
+.btn-run {
+  padding: 4px 9px;
+  font-size: 11px;
+  background: #89b4fa;
+  color: #1e1e2e;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.btn-run:hover:not(:disabled) {
+  background: #74c7ec;
+}
+
+.btn-run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-run.success { background: #a6e3a1; color: #1e1e2e; }
+.btn-run.error   { background: #f38ba8; color: #1e1e2e; }
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-top: 1px solid #313244;
+  background: #181825;
+}

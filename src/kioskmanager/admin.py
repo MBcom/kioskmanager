@@ -1,7 +1,7 @@
 # player/admin.py
 from django.contrib import admin
 from django.contrib.auth.models import Group as AuthGroup # Avoid naming conflict
-from .models import Browser, DisplayGroup, ContentItem, PlaylistEntry
+from .models import Browser, DisplayGroup, ContentItem, PlaylistEntry, AutomationScript
 from unfold.admin import ModelAdmin, TabularInline
 
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -62,6 +62,15 @@ class PlaylistEntryInline(TabularInline): # Or StackedInline
     #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class AutomationScriptInline(TabularInline):
+    model = AutomationScript
+    extra = 1
+    fields = ('order', 'name', 'url_pattern', 'enabled', 'content')
+    ordering = ('order',)
+    verbose_name = "Automation Script"
+    verbose_name_plural = "Automation Scripts (Browser-Steuerung)"
+
+
 class BrowserInline(TabularInline): # Read-only view of browsers in this group
     model = Browser
     extra = 0
@@ -82,7 +91,7 @@ class BrowserInline(TabularInline): # Read-only view of browsers in this group
 class DisplayGroupAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
-    inlines = [PlaylistEntryInline, BrowserInline]
+    inlines = [PlaylistEntryInline, AutomationScriptInline, BrowserInline]
     filter_horizontal = ('managers',) # Use a nice widget for selecting users
 
     # --- Permission Overrides ---
